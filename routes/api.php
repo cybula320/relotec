@@ -68,7 +68,8 @@ Route::post('deploy', function () {
 
     exec('git reset --hard origin/main 2>&1', $output2, $return2);
     file_put_contents($logFile, "git reset:\n" . implode("\n", $output2) . "\n", FILE_APPEND);
-
+ 
+    
     exec('git clean -fd 2>&1', $output3, $return3);
     file_put_contents($logFile, "git clean:\n" . implode("\n", $output3) . "\n", FILE_APPEND);
 
