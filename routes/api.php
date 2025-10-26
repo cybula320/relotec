@@ -73,7 +73,7 @@ Route::post('deploy', function () {
     file_put_contents($logFile, "git clean:\n" . implode("\n", $output3) . "\n", FILE_APPEND);
 
     // 💾 Composer + Laravel
-    exec('/usr/bin/php8.2 /usr/local/bin/composer install --no-dev --optimize-autoloader 2>&1', $composerOutput, $composerReturn);
+    exec('cd /home/jancybulski/web/relotec && /usr/bin/composer install --no-dev --optimize-autoloader 2>&1', $composerOutput, $composerReturn);
     file_put_contents($logFile, "composer install:\n" . implode("\n", $composerOutput) . "\n", FILE_APPEND);
 
     exec('php artisan migrate --force 2>&1', $mig, $migRet);
