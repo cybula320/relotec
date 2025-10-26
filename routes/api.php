@@ -84,6 +84,14 @@ Route::post('deploy', function (Request $request) {
         $output = []; // reset
     }
 
+
+        // 🏷️ Zapisz wersję z ostatniego taga
+    exec('git fetch --tags 2>&1', $tagFetchOutput);
+    $version = trim(shell_exec('git describe --tags --abbrev=0 2>/dev/null')) ?: 'dev';
+    file_put_contents(storage_path('app/version.txt'), $version);
+    file_put_contents($logFile, "🏷️ Wersja: $version\n", FILE_APPEND);
+
+
     // ✅ Koniec
     file_put_contents($logFile, "[" . date('Y-m-d H:i:s') . "] ✅ Deploy zakończony\n\n", FILE_APPEND);
 
