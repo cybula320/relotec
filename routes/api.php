@@ -10,124 +10,82 @@ Route::get('/user', function (Request $request) {
 
 
 
-
-Route::get('deploy', function () {
-    // 🔍 Zbierz podstawowe dane requestu
-    $headers = request()->headers->all();
-    $payload = file_get_contents('php://input');
-    $ip = request()->ip();
-
-    // 🪵 Zapisz wszystko do loga dla debugowania
-    Log::info('🐙 GitHub Webhook received', [
-        'ip' => $ip,
-        'headers' => $headers,
-        'payload_raw' => $payload,
-    ]);
-
-    // 🔐 Sekret z .env
-    $secret = env('DEPLOY_TOKEN', null);
-
-    // ✍️ Weryfikacja podpisu GitHuba (X-Hub-Signature-256)
-    $signature = request()->header('X-Hub-Signature-256');
-    $expected = 'sha256=' . hash_hmac('sha256', $payload, $secret ?? '');
-
-    if (!hash_equals($expected, (string) $signature)) {
-        Log::warning('❌ Unauthorized GitHub webhook attempt', [
-            'ip' => $ip,
-            'expected' => $expected,
-            'provided' => $signature,
-        ]);
-
-        return response()->json(['error' => 'Invalid signature'], 403);
-    }
-
-    // 📂 Ścieżka projektu (zmień, jeśli inna)
-    $path = '/home/admin/web/serwer.relotec.pl/public_html';
-    $output = [];
-
-    // 🚀 1. Git pull
-    exec("cd {$path} && git reset --hard && git pull 2>&1", $output);
-
-    // 📦 2. Composer install
-    exec("cd {$path} && /usr/bin/php8.2 /usr/local/bin/composer install --no-dev --optimize-autoloader 2>&1", $output);
-
-    // 🛠️ 3. Artisan commands
-    exec("cd {$path} && php artisan migrate --force 2>&1", $output);
-    exec("cd {$path} && php artisan cache:clear 2>&1", $output);
-    exec("cd {$path} && php artisan config:cache 2>&1", $output);
-    exec("cd {$path} && php artisan route:cache 2>&1", $output);
-    exec("cd {$path} && php artisan view:clear 2>&1", $output);
-
-    // 🪵 Logowanie wyniku deploya
-    Log::info('✅ Deploy completed successfully', [
-        'ip' => $ip,
-        'output' => $output,
-    ]);
-
-    return response()->json([
-        'status' => 'ok',
-        'output' => $output,
-    ]);
-});
-
-
-
-
 Route::post('deploy', function () {
-    // 🔍 Zbierz podstawowe dane requestu
-    $headers = request()->headers->all();
+    // 📁 Ścieżki
+    $repoDir = '/home/admin/web/serwer.relotec.pl/public_html';
+    $logFile = '/home/admin/web/serwer.relotec.pl/private/deploy.log';
+
+    // 🔐 Sekret lokalny (taki sam jak w "Secret" w GitHub Webhook)
+    $secret = 'twoj_super_tajny_token_123';
+
+    // 🧾 Pobierz payload
     $payload = file_get_contents('php://input');
-    $ip = request()->ip();
-
-    // 🪵 Zapisz wszystko do loga dla debugowania
-    Log::info('🐙 GitHub Webhook received', [
-        'ip' => $ip,
-        'headers' => $headers,
-        'payload_raw' => $payload,
-    ]);
-
-    // 🔐 Sekret z .env
-    $secret = env('DEPLOY_TOKEN', null);
-
-    // ✍️ Weryfikacja podpisu GitHuba (X-Hub-Signature-256)
-    $signature = request()->header('X-Hub-Signature-256');
-    $expected = 'sha256=' . hash_hmac('sha256', $payload, $secret ?? '');
-
-    if (!hash_equals($expected, (string) $signature)) {
-        Log::warning('❌ Unauthorized GitHub webhook attempt', [
-            'ip' => $ip,
-            'expected' => $expected,
-            'provided' => $signature,
-        ]);
-
-        return response()->json(['error' => 'Invalid signature'], 403);
+    if (!$payload) {
+        file_put_contents($logFile, "[" . date('Y-m-d H:i:s') . "] Brak payload\n", FILE_APPEND);
+        return response('Brak payload', 400);
     }
 
-    // 📂 Ścieżka projektu (zmień, jeśli inna)
-    $path = '/home/admin/web/serwer.relotec.pl/public_html';
-    $output = [];
+    // 📬 Sprawdź podpis
+    $signatureHeader = request()->header('X-Hub-Signature-256') ?? request()->header('X-Hub-Signature') ?? '';
+    if (!$signatureHeader) {
+        file_put_contents($logFile, "[" . date('Y-m-d H:i:s') . "] Brak podpisu w nagłówkach\n", FILE_APPEND);
+        return response('Brak podpisu', 403);
+    }
 
-    // 🚀 1. Git pull
-    exec("cd {$path} && git reset --hard && git pull 2>&1", $output);
+    [$algo, $signature] = array_pad(explode('=', $signatureHeader, 2), 2, '');
+    $payloadHash = hash_hmac($algo, $payload, $secret);
 
-    // 📦 2. Composer install
-    exec("cd {$path} && /usr/bin/php8.2 /usr/local/bin/composer install --no-dev --optimize-autoloader 2>&1", $output);
+    if (!hash_equals($signature, $payloadHash)) {
+        file_put_contents(
+            $logFile,
+            "[" . date('Y-m-d H:i:s') . "] Niepoprawny podpis\nOczekiwany: $payloadHash\nOtrzymany: $signature\n\n",
+            FILE_APPEND
+        );
+        return response('Niepoprawny podpis', 403);
+    }
 
-    // 🛠️ 3. Artisan commands
-    exec("cd {$path} && php artisan migrate --force 2>&1", $output);
-    exec("cd {$path} && php artisan cache:clear 2>&1", $output);
-    exec("cd {$path} && php artisan config:cache 2>&1", $output);
-    exec("cd {$path} && php artisan route:cache 2>&1", $output);
-    exec("cd {$path} && php artisan view:clear 2>&1", $output);
+    // 🔍 Rozkoduj payload
+    $data = json_decode($payload, true);
+    if (!isset($data['ref']) || $data['ref'] !== 'refs/heads/main') {
+        file_put_contents($logFile, "[" . date('Y-m-d H:i:s') . "] Push nie na main, pomijam\n", FILE_APPEND);
+        return response('To nie jest push na main', 200);
+    }
 
-    // 🪵 Logowanie wyniku deploya
-    Log::info('✅ Deploy completed successfully', [
-        'ip' => $ip,
-        'output' => $output,
-    ]);
+    // 🪵 Start logowania
+    file_put_contents($logFile, "[" . date('Y-m-d H:i:s') . "] Deploy start\n", FILE_APPEND);
 
-    return response()->json([
-        'status' => 'ok',
-        'output' => $output,
-    ]);
+    // 🚀 Sprawdź, czy exec() działa
+    if (!function_exists('exec')) {
+        file_put_contents($logFile, "BŁĄD: Funkcja exec() wyłączona w PHP\n", FILE_APPEND);
+        return response('exec() wyłączone – sprawdź konfigurację PHP', 200);
+    }
+
+    // 🧭 Przejdź do repo i wykonaj polecenia
+    chdir($repoDir);
+
+    exec('git fetch --all 2>&1', $output1, $return1);
+    file_put_contents($logFile, "git fetch:\n" . implode("\n", $output1) . "\n", FILE_APPEND);
+
+    exec('git reset --hard origin/main 2>&1', $output2, $return2);
+    file_put_contents($logFile, "git reset:\n" . implode("\n", $output2) . "\n", FILE_APPEND);
+
+    exec('git clean -fd 2>&1', $output3, $return3);
+    file_put_contents($logFile, "git clean:\n" . implode("\n", $output3) . "\n", FILE_APPEND);
+
+    // 💾 Composer + Laravel
+    exec('/usr/bin/php8.2 /usr/local/bin/composer install --no-dev --optimize-autoloader 2>&1', $composerOutput, $composerReturn);
+    file_put_contents($logFile, "composer install:\n" . implode("\n", $composerOutput) . "\n", FILE_APPEND);
+
+    exec('php artisan migrate --force 2>&1', $mig, $migRet);
+    exec('php artisan config:cache 2>&1', $cfg, $cfgRet);
+    exec('php artisan route:cache 2>&1', $rt, $rtRet);
+    exec('php artisan view:clear 2>&1', $vc, $vcRet);
+    exec('php artisan cache:clear 2>&1', $cc, $ccRet);
+
+    file_put_contents($logFile, "artisan:\n" . implode("\n", array_merge($mig, $cfg, $rt, $vc, $cc)) . "\n", FILE_APPEND);
+
+    // ✅ Koniec
+    file_put_contents($logFile, "[" . date('Y-m-d H:i:s') . "] Deploy done\n\n", FILE_APPEND);
+
+    return response('Deploy wykonany', 200);
 });
