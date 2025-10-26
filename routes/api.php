@@ -57,18 +57,39 @@ Route::get('deploy', function () {
 
 
 
+<?php
+
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Log;
+
 Route::post('deploy', function () {
-    // 🔐 Sekret z pliku .env
+    // 🔍 Zbierz podstawowe dane requestu
+    $headers = request()->headers->all();
+    $payload = file_get_contents('php://input');
+    $ip = request()->ip();
+
+    // 🪵 Zapisz wszystko do loga dla debugowania
+    Log::info('🐙 GitHub Webhook received', [
+        'ip' => $ip,
+        'headers' => $headers,
+        'payload_raw' => $payload,
+    ]);
+
+    // 🔐 Sekret z .env
     $secret = env('DEPLOY_TOKEN', null);
 
-    // 🧩 Sprawdzenie poprawności tokena
-    $provided = request()->header('X-Deploy-Token');
-    if (!$secret || $provided !== $secret) {
-        Log::warning('❌ Unauthorized deploy attempt', [
-            'ip' => request()->ip(),
-            'provided_token' => $provided,
+    // ✍️ Weryfikacja podpisu GitHuba (X-Hub-Signature-256)
+    $signature = request()->header('X-Hub-Signature-256');
+    $expected = 'sha256=' . hash_hmac('sha256', $payload, $secret ?? '');
+
+    if (!hash_equals($expected, (string) $signature)) {
+        Log::warning('❌ Unauthorized GitHub webhook attempt', [
+            'ip' => $ip,
+            'expected' => $expected,
+            'provided' => $signature,
         ]);
-        abort(403, 'Unauthorized.');
+
+        return response()->json(['error' => 'Invalid signature'], 403);
     }
 
     // 📂 Ścieżka projektu (zmień, jeśli inna)
@@ -88,13 +109,12 @@ Route::post('deploy', function () {
     exec("cd {$path} && php artisan route:cache 2>&1", $output);
     exec("cd {$path} && php artisan view:clear 2>&1", $output);
 
-    // 🪵 Logowanie wyniku
+    // 🪵 Logowanie wyniku deploya
     Log::info('✅ Deploy completed successfully', [
-        'ip' => request()->ip(),
+        'ip' => $ip,
         'output' => $output,
     ]);
 
-    // 📤 Odpowiedź JSON
     return response()->json([
         'status' => 'ok',
         'output' => $output,
