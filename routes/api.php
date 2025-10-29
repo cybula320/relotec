@@ -65,9 +65,15 @@ Route::post('deploy', function (Request $request) {
 
     file_put_contents($logFile, "🧩 GIT:\n" . implode("\n", array_merge($outFetch, $outReset, $outClean)) . "\n", FILE_APPEND);
 
-    // 💾 Composer
-    exec("$composerBin install --no-dev --optimize-autoloader 2>&1", $outComposer, $retComposer);
-    file_put_contents($logFile, "💾 COMPOSER:\n" . implode("\n", $outComposer) . "\n", FILE_APPEND);
+// 💾 Composer install
+exec("$composerBin install --no-dev --optimize-autoloader 2>&1", $outComposer, $retComposer);
+file_put_contents($logFile, "💾 COMPOSER INSTALL:\n" . implode("\n", $outComposer) . "\n", FILE_APPEND);
+
+// 💾 Composer dump-autoload
+exec("$composerBin dump-autoload -o 2>&1", $outDump, $retDump);
+file_put_contents($logFile, "💾 COMPOSER DUMP-AUTOLOAD:\n" . implode("\n", $outDump) . "\n", FILE_APPEND);
+
+
 
     // ⚙️ Laravel Artisan
     $artisanCommands = [
