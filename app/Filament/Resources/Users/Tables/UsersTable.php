@@ -14,9 +14,11 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkAction;
-  
+ 
  class UsersTable
 {
+ 
+
     public static function configure(Table $table): Table
     {
         return $table
@@ -29,11 +31,11 @@ use Filament\Actions\BulkAction;
             IconColumn::make('is_active')
                 ->label('Aktywny')
                 ->boolean(),
-            TextColumn::make('last_login_at')
-                ->label('Ostatnie logowanie')
-                ->dateTime()
-                ->sortable()
-                ->toggleable(),
+            // TextColumn::make('last_login_at')
+            //     ->label('Ostatnie logowanie')
+            //     ->dateTime()
+            //     ->sortable()
+            //     ->toggleable(),
             TextColumn::make('created_at')->label('Utworzono')->dateTime()->sortable(),
         ])
         ->filters([
@@ -48,6 +50,8 @@ use Filament\Actions\BulkAction;
         ])
         ->actions([
             DeleteAction::make(),
+            //DeleteAction::make(),
+            EditAction::make(),
         ])
         ->bulkActions([
  DeleteBulkAction::make(),

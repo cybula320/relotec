@@ -25,6 +25,9 @@ class UserResource extends Resource
     {
         return 'System';
     }
+    protected static ?string $modelLabel = 'Użytkownik';
+    protected static ?string $pluralModelLabel = 'Użytkownicy';
+    
     // protected static $navigationGroup = 'Zarządzanie systemem';
 
     public static function form(Schema $schema): Schema
