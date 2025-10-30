@@ -2,20 +2,14 @@
     <x-filament::section>
         <div class="fi-filament-info-widget-main">
             <a
-                href="https://filamentphp.com"
+                href="creospace.eu"
                 rel="noopener noreferrer"
                 target="_blank"
             >
-                <img
-                    aria-label="Filament"
-                    src="https://freztech.com.pl/wp-content/uploads/2025/10/Obszar-roboczy-1.png"
-                    fill="currentColor"
-                    role="img"
-                    viewBox="0 0 303 61"
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="fi-filament-info-widget-logo"
-                >
       
+    <img src="https://freztech.com.pl/wp-content/uploads/2025/10/relotec-dark.svg" viewBox="0 0 303 61" class="white-off logowidget" alt="Relotec">
+    <img src="https://freztech.com.pl/wp-content/uploads/2025/10/relotec-light.svg" viewBox="0 0 303 61"  class="white-on logowidget" alt="Relotec">
+
 </img>
             </a>
 
