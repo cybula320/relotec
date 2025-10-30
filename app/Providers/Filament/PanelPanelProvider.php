@@ -41,7 +41,7 @@ class PanelPanelProvider extends PanelProvider
                 AccountWidget::class,
                // FilamentInfoWidget::class,
             ])
-            // ->viteTheme('resources/css/filament/admin/theme.pcss') // 👈 to jest najważniejsze
+            ->viteTheme('resources/css/filament/admin/theme.css') // 👈 to jest najważniejsze
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
