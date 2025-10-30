@@ -40,7 +40,7 @@ class UserForm
                 ->options([
                     'admin' => 'Superadministrator',
                     'user' => 'Pracownik',
-                    'editor' => 'Podglądający',
+                    'viewer' => 'Podglądający',
                 ])
                 ->default('user')
                 ->required(),

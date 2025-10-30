@@ -44,7 +44,7 @@ use Filament\Actions\BulkAction;
                 ->options([
                     'admin' => 'Superadministrator',
                     'user' => 'Pracownik',
-                    'editor' => 'Podglądający',
+                    'viewer' => 'Podglądający',
                 ]),
             TernaryFilter::make('is_active')->label('Status'),
         ])
