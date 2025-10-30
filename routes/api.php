@@ -75,6 +75,18 @@ file_put_contents($logFile, "💾 COMPOSER DUMP-AUTOLOAD:\n" . implode("\n", $ou
 
 
 
+file_put_contents($logFile, "💥 NPM BUILD START:\n", FILE_APPEND);
+
+exec("$npmBin run build 2>&1", $outNpm, $retNpm);
+file_put_contents($logFile, "💥 NPM BUILD OUTPUT:\n" . implode("\n", $outNpm) . "\n", FILE_APPEND);
+
+if ($retNpm !== 0) {
+    file_put_contents($logFile, "❌ NPM BUILD FAILED (code $retNpm)\n", FILE_APPEND);
+} else {
+    file_put_contents($logFile, "✅ NPM BUILD COMPLETED SUCCESSFULLY\n", FILE_APPEND);
+}
+
+
     // ⚙️ Laravel Artisan
     $artisanCommands = [
         "$phpBin artisan migrate --force",
