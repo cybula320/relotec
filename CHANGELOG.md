@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.6](https://github.com/cybula320/relotec/compare/v0.0.5...v0.0.6) (2025-10-30)
+
+
+### 🐛 Poprawki
+
+* **activity-logs:** implement activity log resource and related migrations ([b519bdd](https://github.com/cybula320/relotec/commit/b519bddc3f4d20dae9bb464d48da3e57dacea290))
+* **forms:** asctivity json log ([cc8895c](https://github.com/cybula320/relotec/commit/cc8895c27bc252cb29e7254edfdf78e35ed2a342))
+* **LogLogowania:** poprawa zapisu roli uzytkownika w logu ([e7985de](https://github.com/cybula320/relotec/commit/e7985de2e2ba3b026b6a8dcbcc11e96b929aad52))
+* **user:** dodanie LOG na mail z zalogowania się do systemu ([c8c3228](https://github.com/cybula320/relotec/commit/c8c3228418a854df4a8d0026a257f3b5a056aa36))
+
 ### [0.0.5](https://github.com/cybula320/relotec/compare/v0.0.4...v0.0.5) (2025-10-30)
 
 
