@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.7](https://github.com/cybula320/relotec/compare/v0.0.6...v0.0.7) (2025-10-30)
+
+
+### 🐛 Poprawki
+
+* **logo:** dodanie logotypu ([5d4a96e](https://github.com/cybula320/relotec/commit/5d4a96eb46f9edc9ea8a76a036556265973fe433))
+
 ### [0.0.6](https://github.com/cybula320/relotec/compare/v0.0.5...v0.0.6) (2025-10-30)
 
 
