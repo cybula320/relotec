@@ -41,7 +41,7 @@ class PanelPanelProvider extends PanelProvider
                 AccountWidget::class,
                // FilamentInfoWidget::class,
             ])
-            ->viteTheme('resources/css/filament/admin/theme.css') // 👈 to jest najważniejsze
+            ->brandLogo('https://freztech.com.pl/wp-content/uploads/2025/10/Obszar-roboczy-1.png')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -53,6 +53,7 @@ class PanelPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            ->brandLogo(asset('images/logo.svg'))
             ->authMiddleware([
                 Authenticate::class,
             ]);
