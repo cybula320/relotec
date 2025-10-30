@@ -18,6 +18,15 @@ use Filament\Tables\Table;
 
 class ActivityLogResource extends Resource
 {
+
+    public static function getNavigationGroup(): string
+    {
+        return 'System';
+    }
+
+    protected static ?string $modelLabel = 'Dziennik aktywności';
+    protected static ?string $pluralModelLabel = 'Dziennik aktywności';
+
     protected static ?string $model = ActivityLog::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

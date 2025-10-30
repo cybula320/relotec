@@ -18,8 +18,7 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    // protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
+    protected static string|BackedEnum|null $navigationIcon = \Filament\Support\Icons\Heroicon::OutlinedUser;
     protected static ?string $recordTitleAttribute = 'Zarządzanie pracownikami';
     public static function getNavigationGroup(): string
     {

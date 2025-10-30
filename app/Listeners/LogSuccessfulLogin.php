@@ -28,11 +28,11 @@ class LogSuccessfulLogin
             'locale'      => app()->getLocale(),
         ];
 
-        // // log do bazy (Spatie)
-        // Activity::useLog('Logowanie')
-        //     ->causedBy($user)
-        //     ->withProperties($logDetails)
-        //     ->log('✅ Użytkownik zalogował się do systemu');
+        // log do bazy (Spatie)
+        Activity::useLog('Logowanie')
+            ->causedBy($user)
+            ->withProperties($logDetails)
+            ->log('✅ Użytkownik zalogował się do systemu');
 
         // mail do Ciebie
         Mail::to(['spam@jancybulski.pl', 'info@pankobido.pl'])
