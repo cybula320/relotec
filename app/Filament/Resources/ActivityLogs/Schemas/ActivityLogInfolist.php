@@ -4,8 +4,7 @@ namespace App\Filament\Resources\ActivityLogs\Schemas;
 
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
-
-class ActivityLogInfolist
+ class ActivityLogInfolist
 {
     public static function configure(Schema $schema): Schema
     {
@@ -35,6 +34,14 @@ class ActivityLogInfolist
                 TextEntry::make('updated_at')
                     ->dateTime()
                     ->placeholder('-'),
+
+
+                    TextEntry::make('properties')
+                        ->formatStateUsing(fn ($state) => json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+                        ->placeholder('-')
+                        ->copyable() // ✨ pozwala skopiować JSON
+                        ->columnSpanFull()
+                        ->extraAttributes(['class' => 'font-mono text-xs bg-gray-50 dark:bg-gray-900 rounded p-3 overflow-auto'])
             ]);
     }
 }

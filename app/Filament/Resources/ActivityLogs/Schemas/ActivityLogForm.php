@@ -17,7 +17,9 @@ class ActivityLogForm
                     ->required()
                     ->columnSpanFull(),
                 TextInput::make('subject_type'),
+                TextInput::make('properties'),
                 TextInput::make('event'),
+
                 TextInput::make('subject_id')
                     ->numeric(),
                 TextInput::make('causer_type'),

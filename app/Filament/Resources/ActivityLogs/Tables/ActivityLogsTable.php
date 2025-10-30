@@ -26,6 +26,7 @@ class ActivityLogsTable
                     ->sortable(),
                 TextColumn::make('causer_type')
                     ->searchable(),
+                TextColumn::make('properties'),
                 TextColumn::make('causer_id')
                     ->numeric()
                     ->sortable(),
