@@ -5,4 +5,30 @@
 @tailwind utilities;
 
 /* (opcjonalnie) Twoje niestandardowe style */
- 
+/* 🌞 Jasny motyw (light mode)
+   ----------------------------
+   Domyślnie widoczne są elementy .white-on
+   Ukryte są elementy .white-off
+*/
+.white-on {
+    display: block !important;
+}
+
+.white-off {
+    display: none !important;
+}
+
+/* 🌙 Ciemny motyw (dark mode)
+   ----------------------------
+   Filament automatycznie dodaje klasę .dark do <html>
+   Wtedy role się odwracają:
+   - .white-on znika
+   - .white-off się pojawia
+*/
+.dark .white-on {
+    display: none !important;
+}
+
+.dark .white-off {
+    display: block !important;
+}

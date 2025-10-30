@@ -11,12 +11,12 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class PanelPanelProvider extends PanelProvider
@@ -26,6 +26,7 @@ class PanelPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('panel')
+            ->darkMode()
             ->path('panel')
             ->login()
             ->colors([
@@ -39,9 +40,13 @@ class PanelPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
-               // FilamentInfoWidget::class,
             ])
-            ->brandLogo('https://freztech.com.pl/wp-content/uploads/2025/10/Obszar-roboczy-1.png')
+            // ✅ jedno brandLogo z obsługą dark/light
+            ->brandLogo(fn (): HtmlString => new HtmlString(
+                '<img src="https://freztech.com.pl/wp-content/uploads/2025/10/relotec-dark.svg" class="h-6 white-off" alt="Relotec">
+                <img src="https://freztech.com.pl/wp-content/uploads/2025/10/relotec-light.svg" class="h-6 hidden dark:inline white-on" alt="Relotec">'
+            ))
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -53,7 +58,6 @@ class PanelPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-            ->brandLogo(asset('images/logo.svg'))
             ->authMiddleware([
                 Authenticate::class,
             ]);
