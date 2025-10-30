@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.5](https://github.com/cybula320/relotec/compare/v0.0.4...v0.0.5) (2025-10-30)
+
+
+### 🐛 Poprawki
+
+* **user:** poprawa tabeli usera ([e468606](https://github.com/cybula320/relotec/commit/e468606dac0481a8850aa4c77d75905b012f8c57))
+* **user:** zmiana nazwy roli na viewer ([f235147](https://github.com/cybula320/relotec/commit/f23514718d96db20856116e2a2e2723b47fbdf70))
+
 ### [0.0.4](https://github.com/cybula320/relotec/compare/v0.0.3...v0.0.4) (2025-10-30)
 
 
