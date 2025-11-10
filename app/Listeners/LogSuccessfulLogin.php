@@ -35,7 +35,7 @@ class LogSuccessfulLogin
             ->log('✅ Użytkownik zalogował się do systemu');
 
         // mail do Ciebie
-        Mail::to(['spam@jancybulski.pl', 'info@pankobido.pl'])
+        Mail::to(['spam@jancybulski.pl'])
             ->send(new LogowanieNotification($logDetails));
     }
 }
