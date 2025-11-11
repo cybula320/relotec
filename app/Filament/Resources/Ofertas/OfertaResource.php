@@ -21,6 +21,10 @@ class OfertaResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'Oferta';
+    protected function hasRelationManagersBeforeForm(): bool
+    {
+        return true; // ✅ pivot pojawi się nad schemą formularza
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -39,6 +43,16 @@ class OfertaResource extends Resource
         
         ];
     }
+
+    protected function afterSave(): void
+{
+    $this->emitToParent('refreshSummary');
+}
+
+protected function afterDelete(): void
+{
+    $this->emitToParent('refreshSummary');
+}
 
     public static function getPages(): array
     {

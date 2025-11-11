@@ -46,4 +46,19 @@ class Oferta extends Model
         }
     });
 }
+
+ 
+
+public function recalculateTotals(): void
+{
+    $totalNet = $this->pozycje()->sum('total_net');
+    $totalGross = $this->pozycje()->sum('total_gross');
+
+    $this->update([
+        'total_net' => $totalNet,
+        'total_gross' => $totalGross,
+    ]);
+}
+
+
 }

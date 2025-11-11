@@ -29,12 +29,18 @@ class OfertaPozycja extends Model
 
     protected static function booted()
     {
-        static::saving(function ($item) {
-            $item->total_net = $item->ilosc * $item->unit_price_net;
-            $item->total_gross = $item->total_net * (1 + ($item->vat_rate / 100));
+        static::saved(function ($pozycja) {
+            if ($pozycja->oferta) {
+                $pozycja->oferta->recalculateTotals();
+    
+                // 🔥 Wyślij event do Livewire
+                if (method_exists($pozycja->oferta, 'emitTo')) {
+                    $pozycja->oferta->emitTo(
+                        'filament.resources.ofertas.pages.edit-oferta',
+                        'refreshSummary'
+                    );
+                }
+            }
         });
-
-        static::saved(fn ($item) => $item->oferta?->recalcTotals());
-        static::deleted(fn ($item) => $item->oferta?->recalcTotals());
     }
 }

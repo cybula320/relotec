@@ -14,13 +14,15 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 
 // Komponenty formularza
- use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
 use Filament\Schemas\Components\Section;
+use Filament\Tables\Columns\Summarizers\Sum;
 
 // Kolumny tabeli
 use Filament\Tables\Columns\TextColumn;
+use Filament\Notifications\Notification;
 
 class OfertaPozycjeRelationManager extends RelationManager
 {
@@ -38,13 +40,8 @@ class OfertaPozycjeRelationManager extends RelationManager
                         ->label('Nazwa produktu')
                         ->placeholder('np. Usługa CNC, zestaw śrub, produkt A')
                         ->required()
-                        ->maxLength(255),
-
-                    TextInput::make('ilosc')
-                        ->numeric()
-                        ->label('Ilość')
-                        ->default(1)
-                        ->minValue(1),
+                        ->maxLength(255)
+                        ->columnSpanFull(),
 
                     Textarea::make('opis')
                         ->label('Opis / szczegóły')
@@ -52,35 +49,86 @@ class OfertaPozycjeRelationManager extends RelationManager
                         ->columnSpanFull()
                         ->placeholder('Krótki opis pozycji, parametry, specyfikacja...'),
                 ])
-                ->columns(2)
+                ->columns(1)
                 ->columnSpanFull()
                 ->collapsible(),
 
-            // 💰 Ceny
+            // 💰 Ceny z automatycznym przeliczeniem
             Section::make('💰 Ceny i wartości')
-                ->description('Wprowadź ceny netto, stawkę VAT oraz kwoty brutto')
+                ->description('Wprowadź dane do kalkulacji — system automatycznie przeliczy wartości netto i brutto.')
                 ->schema([
-                    TextInput::make('unit_price_net')
-                        ->label('Cena netto')
-                        ->prefix('PLN')
-                        ->numeric()
-                        ->step(0.01)
-                        ->placeholder('np. 100.00'),
+                    // 🧮 Dane wejściowe
+                    Section::make('🧮 Dane wejściowe')
+                        ->schema([
+                            TextInput::make('ilosc')
+                                ->label('Ilość')
+                                ->numeric()
+                                ->default(1)
+                                ->minValue(1)
+                                ->required()
+                                ->reactive()
+                                ->helperText('Podaj ilość sztuk / jednostek')
+                                ->suffix('szt.')
+                                ->afterStateUpdated(function ($state, callable $get, callable $set, $livewire) {
+                                    static::przelicz($get, $set);
+                                    // ✅ Emitujemy event do nadrzędnego komponentu (oferty)
+                                    $livewire->dispatch('refreshSummary');
+                                }),
 
-                    TextInput::make('vat_rate')
-                        ->label('VAT (%)')
-                        ->numeric()
-                        ->default(23)
-                        ->step(1),
+                            TextInput::make('unit_price_net')
+                                ->label('Cena jednostkowa netto')
+                                ->numeric()
+                                ->step(0.01)
+                                ->placeholder('np. 125.50')
+                                ->required()
+                                ->reactive()
+                                ->helperText('Cena netto za jedną sztukę')
+                                ->afterStateUpdated(function ($state, callable $get, callable $set, $livewire) {
+                                    static::przelicz($get, $set);
+                                    $livewire->dispatch('refreshSummary');
+                                }),
 
-                    TextInput::make('unit_price_gross')
-                        ->label('Cena brutto')
-                        ->prefix('PLN')
-                        ->numeric()
-                        ->step(0.01)
-                        ->placeholder('np. 123.00'),
+                            TextInput::make('vat_rate')
+                                ->label('Stawka VAT')
+                                ->numeric()
+                                ->default(23)
+                                ->step(1)
+                                ->suffix('%')
+                                ->helperText('Standardowa stawka VAT to 23%')
+                                ->reactive()
+                                ->afterStateUpdated(function ($state, callable $get, callable $set, $livewire) {
+                                    static::przelicz($get, $set);
+                                    $livewire->dispatch('refreshSummary');
+                                }),
+                        ])
+                        ->columns(3)
+                        ->icon('heroicon-o-calculator')
+                        ->columnSpanFull(),
+
+                    // 💰 Automatyczne wyniki kalkulacji
+                    Section::make('📊 Wyniki kalkulacji')
+                        ->schema([
+                            TextInput::make('total_net')
+                                ->label('Wartość netto')
+                                ->numeric()
+                                ->readOnly()
+                                ->dehydrated(true)
+                                ->extraAttributes(['class' => 'font-semibold text-blue-700 dark:text-blue-400'])
+                                ->helperText('Suma netto (ilość × cena jednostkowa)'),
+
+                            TextInput::make('total_gross')
+                                ->label('Wartość brutto')
+                                ->numeric()
+                                ->readOnly()
+                                ->dehydrated(true)
+                                ->extraAttributes(['class' => 'font-semibold text-green-700 dark:text-green-400'])
+                                ->helperText('Suma brutto (netto + VAT)'),
+                        ])
+                        ->columns(2)
+                        ->icon('heroicon-o-banknotes')
+                        ->columnSpanFull()
+                        ->collapsible(),
                 ])
-                ->columns(3)
                 ->columnSpanFull()
                 ->collapsible(),
 
@@ -106,6 +154,29 @@ class OfertaPozycjeRelationManager extends RelationManager
         ]);
     }
 
+    /**
+     * 💡 Przelicz wartości netto i brutto w locie
+     */
+    private static function przelicz(callable $get, callable $set): void
+    {
+        $ilosc = (float) $get('ilosc') ?: 0;
+        $cena = (float) $get('unit_price_net') ?: 0;
+        $vat = (float) $get('vat_rate') ?: 0;
+
+        $netto = $ilosc * $cena;
+        $brutto = $netto * (1 + ($vat / 100));
+
+        $set('total_net', round($netto, 2));
+        $set('total_gross', round($brutto, 2));
+
+        // 🔔 UX feedback – delikatne info dla użytkownika
+        Notification::make()
+            ->title('💰 Zaktualizowano wartości pozycji')
+            ->success()
+            ->duration(1000)
+            ->send();
+    }
+
     public function table(Table $table): Table
     {
         return $table
@@ -123,17 +194,21 @@ class OfertaPozycjeRelationManager extends RelationManager
                 TextColumn::make('unit_price_net')
                     ->label('Cena netto')
                     ->money('PLN', true)
+                    ->summarize(Sum::make())// <— tutaj suma netto wszystkich wiersz
                     ->sortable(),
 
                 TextColumn::make('vat_rate')
+                ->summarize(Sum::make())
                     ->label('VAT (%)'),
 
                 TextColumn::make('total_net')
+                ->summarize(Sum::make())
                     ->label('Wartość netto')
                     ->money('PLN', true)
                     ->sortable(),
 
                 TextColumn::make('total_gross')
+                ->summarize(Sum::make())
                     ->label('Wartość brutto')
                     ->money('PLN', true)
                     ->sortable(),
@@ -143,6 +218,7 @@ class OfertaPozycjeRelationManager extends RelationManager
                     ->limit(40)
                     ->wrap(),
             ])
+            
             ->headerActions([
                 CreateAction::make()->label('Dodaj pozycję'),
             ])
