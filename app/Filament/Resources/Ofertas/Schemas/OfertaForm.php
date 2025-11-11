@@ -242,7 +242,7 @@ class OfertaForm
 
             // 💰 PODSUMOWANIE
             Section::make('💰 Podsumowanie wartości')
-                ->description('Suma wartości z pozycji oferty')
+                ->description('Suma wartości z pozycji oferty (zmiana nie jest możliwa ręcznie)')
                 ->schema([
                     Section::make()
                         ->schema([

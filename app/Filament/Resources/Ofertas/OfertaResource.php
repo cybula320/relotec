@@ -60,6 +60,7 @@ protected function afterDelete(): void
             'index' => ListOfertas::route('/'),
             'create' => CreateOferta::route('/create'),
             'edit' => EditOferta::route('/{record}/edit'),
+            'view' => Pages\ViewOferta::route('/{record}'), 
         ];
     }
 }
