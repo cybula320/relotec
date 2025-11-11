@@ -37,4 +37,13 @@ class Oferta extends Model
         $count = self::whereYear('created_at', now()->year)->count() + 1;
         return sprintf('OF-%s-%04d', $year, $count);
     }
+
+    protected static function booted()
+{
+    static::creating(function ($oferta) {
+        if (empty($oferta->numer)) {
+            $oferta->numer = \App\Helpers\OfferNumberHelper::generate();
+        }
+    });
+}
 }

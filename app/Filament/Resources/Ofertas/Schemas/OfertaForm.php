@@ -21,10 +21,16 @@ class OfertaForm
                     Section::make()
                         ->schema([
                             TextInput::make('numer')
-                                ->label('Numer oferty')
-                                ->placeholder('np. OF/2025/011')
-                                ->prefixIcon('heroicon-o-hashtag')
-                                ->required(),
+                            ->label('Numer oferty')
+                            ->prefixIcon('heroicon-o-hashtag')
+                            ->default(fn() => \App\Helpers\OfferNumberHelper::generate())
+                            ->readOnly()
+                            ->dehydrated(true) // ważne: żeby został zapisany do bazy
+                            ->required()
+                            ->hint('Automatycznie generowany przy tworzeniu nowej oferty')
+                            ->extraAttributes([
+                                'class' => 'font-semibold text-primary-600 dark:text-primary-400',
+                            ]),
 
                             Select::make('firma_id')
                                 ->label('Firma')
