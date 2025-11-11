@@ -27,7 +27,7 @@ class HandlowiecResource extends Resource
     protected static ?string $pluralModelLabel = 'handlowiec';
     public static function getNavigationGroup(): ?string
     {
-        return 'Zamówienia';
+        return 'Kontrahenci';
     }
 
     public static function form(Schema $schema): Schema

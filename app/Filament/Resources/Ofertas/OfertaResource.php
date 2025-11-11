@@ -20,7 +20,15 @@ class OfertaResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+
     protected static ?string $recordTitleAttribute = 'Oferta';
+    protected static ?string $pluralModelLabel = 'Oferty';
+    // public static function getNavigationGroup(): ?string
+    // {
+    //     return 'Oferty';
+    // }
+
+
     protected function hasRelationManagersBeforeForm(): bool
     {
         return true; // ✅ pivot pojawi się nad schemą formularza

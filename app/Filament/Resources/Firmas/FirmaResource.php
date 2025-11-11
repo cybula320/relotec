@@ -27,7 +27,7 @@ class FirmaResource extends Resource
     protected static ?string $pluralModelLabel = 'Dane firm';
     public static function getNavigationGroup(): ?string
     {
-        return 'Zamówienia';
+        return 'Kontrahenci';
     }
     protected static ?int $navigationSort = -1;
     public static function form(Schema $schema): Schema

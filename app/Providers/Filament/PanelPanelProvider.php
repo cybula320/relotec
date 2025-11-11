@@ -18,12 +18,16 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Navigation\NavigationGroup;
 
 class PanelPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
+       // ->sidebarCollapsibleOnDesktop()
+        ->topNavigation()
+
             ->default()
             ->id('panel')
             ->darkMode()
@@ -31,6 +35,26 @@ class PanelPanelProvider extends PanelProvider
             ->login()
             ->colors([
                 'primary' => Color::Amber,
+            ])
+
+            ->navigationGroups([
+                NavigationGroup::make()
+                    ->label('Oferty')
+                    ->icon('heroicon-o-briefcase'),
+    
+                NavigationGroup::make()
+                    ->label('Zamówienia')
+                    ->icon('heroicon-o-shopping-cart'),
+    
+                NavigationGroup::make()
+                    ->label('Kontrahenci')
+                    //->icon('heroicon-o-users'),
+                    ,
+    
+                NavigationGroup::make()
+                    ->label('System')
+                    //->icon('heroicon-o-cog-6-tooth'),
+                    ,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

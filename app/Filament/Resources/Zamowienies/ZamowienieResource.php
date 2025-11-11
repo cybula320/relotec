@@ -20,7 +20,12 @@ class ZamowienieResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $recordTitleAttribute = 'Zamowienie';
+    protected static ?string $recordTitleAttribute = 'Zamówienie';
+    protected static ?string $pluralModelLabel = 'zamówienia';
+    // public static function getNavigationGroup(): ?string
+    // {
+    //     return 'Zamówienia';
+    // }
 
     public static function form(Schema $schema): Schema
     {
