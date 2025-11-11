@@ -36,7 +36,10 @@ class PanelPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-
+            ->renderHook(
+                'panels::head.end',
+                fn (): string => view('vendor.filament.components.clarity-tracker')->render(),
+            )
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label('Oferty')
