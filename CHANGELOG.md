@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.9](https://github.com/cybula320/relotec/compare/v0.0.8...v0.0.9) (2025-11-11)
+
+
+### 🐛 Poprawki
+
+* **menu:** ułozone menu ([bb86936](https://github.com/cybula320/relotec/commit/bb86936fbe17dd212ae1982c29cdf6e0bf2c840d))
+* **oferta:** dodanie dobrze wyglądającej tabel oferty ([8488821](https://github.com/cybula320/relotec/commit/84888215b358d07d604a3ca07da7e3a43ff8c1f3))
+
+
+### ✨ Nowe funkcje
+
+* **widget:** dodanie widgetu wykresowego ([4eb2f74](https://github.com/cybula320/relotec/commit/4eb2f74ff2e166fe3c8874969a05c3a5e1fe7c34))
+* **widget:** oferty w toku ([7b5ce5f](https://github.com/cybula320/relotec/commit/7b5ce5f9ff218d3a2ead90da5ed20d9f1bb5b904))
+
 ### [0.0.8](https://github.com/cybula320/relotec/compare/v0.0.7...v0.0.8) (2025-11-11)
 
 
