@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.8](https://github.com/cybula320/relotec/compare/v0.0.7...v0.0.8) (2025-11-11)
+
+
+### 🐛 Poprawki
+
+* **firma:** dzialajaca firma ([a3ec9af](https://github.com/cybula320/relotec/commit/a3ec9afbc8f5f7c1dc24bf09d736c7405a1fba3d))
+* **handlowiec:** dodaj handlowca ([38a8bc9](https://github.com/cybula320/relotec/commit/38a8bc984fe3330f682d8c9ec0196f290db3bb69))
+* **listener:** mail listerne ([2237cae](https://github.com/cybula320/relotec/commit/2237cae7843ca6e6e40b73578f4015f647016790))
+* **oferta:** auto numer ([9319bdc](https://github.com/cybula320/relotec/commit/9319bdc225662715d88b617cc96cf18696c126e9))
+
 ### [0.0.7](https://github.com/cybula320/relotec/compare/v0.0.6...v0.0.7) (2025-10-30)
 
 
