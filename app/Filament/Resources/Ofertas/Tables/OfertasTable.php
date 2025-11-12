@@ -186,16 +186,16 @@ class OfertasTable
                 // Zakres dat utworzenia
                 Filter::make('created_at')
                     ->label('Data utworzenia')
-                    ->columns(2)
+                    ->columns()
                     ->columnSpanFull()
                     ->form([
                         \Filament\Forms\Components\DatePicker::make('od')
-                            ->label('Od')
+                            ->label('Data od:')
                             ->native(false)
                             ->displayFormat('d.m.Y'),
             
                         \Filament\Forms\Components\DatePicker::make('do')
-                            ->label('Do')
+                            ->label('Data do:')
                             ->native(false)
                             ->displayFormat('d.m.Y'),
                     ])
@@ -213,6 +213,41 @@ class OfertasTable
                             . ($data['od'] && $data['do'] ? ' – ' : '')
                             . ($data['do'] ? 'Do: ' . \Carbon\Carbon::parse($data['do'])->format('d.m.Y') : '');
                     }),
+
+                    Filter::make('total_net_range')
+                    ->columns(2)
+                    ->columnSpanFull()
+
+                            ->form([
+                                \Filament\Forms\Components\TextInput::make('min')
+                        
+                                    ->label('Cena od ')
+                                    ->numeric()
+                                    ->placeholder('np. 1000'),
+
+                                \Filament\Forms\Components\TextInput::make('max')
+                        
+                                    ->label('Cena do')
+                                    ->numeric()
+                                    ->placeholder('np. 50000'),
+                                    
+                            ])
+                                ->query(function (Builder $query, array $data): Builder {
+                                    return $query
+                                        ->when($data['min'], fn ($q, $min) => $q->where('total_net', '>=', $min))
+                                        ->when($data['max'], fn ($q, $max) => $q->where('total_net', '<=', $max));
+                                })
+                                ->indicateUsing(function (array $data): ?string {
+                                    if (! $data['min'] && ! $data['max']) {
+                                        return null;
+                                    }
+
+                                    return 'Kwota: ' .
+                                        ($data['min'] ? number_format($data['min'], 0, ',', ' ') . ' zł' : '—') .
+                                        ' – ' .
+                                        ($data['max'] ? number_format($data['max'], 0, ',', ' ') . ' zł' : '—');
+                                }),
+
             
                 // Przekształcone w zamówienie
        
