@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 class ZamowieniePozycja extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = 'zamowienie_pozycje';
 
@@ -37,4 +38,13 @@ class ZamowieniePozycja extends Model
         static::saved(fn ($item) => $item->zamowienie?->recalcTotals());
         static::deleted(fn ($item) => $item->zamowienie?->recalcTotals());
     }
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->useLogName('Zamowienie Pozycja')
+            ->logOnlyDirty(false)
+            ->submitEmptyLogs();
+    }
+    
 }

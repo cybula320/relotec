@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 class Oferta extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = 'oferty';
 
@@ -21,6 +22,15 @@ class Oferta extends Model
     public function firma() { return $this->belongsTo(Firma::class); }
     public function handlowiec() { return $this->belongsTo(Handlowiec::class); }
     public function pozycje() { return $this->hasMany(OfertaPozycja::class); }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->useLogName('Oferta')
+            ->logOnlyDirty(false)
+            ->submitEmptyLogs();
+    }
 
     public function recalcTotals(): void
     {

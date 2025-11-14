@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 class OfertaPozycja extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = 'oferta_pozycje';
 
@@ -26,7 +27,14 @@ class OfertaPozycja extends Model
     ];
 
     public function oferta() { return $this->belongsTo(Oferta::class); }
-
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->useLogName('Oferta Pozycja')
+            ->logOnlyDirty(false)
+            ->submitEmptyLogs();
+    }
     protected static function booted()
     {
         static::saved(function ($pozycja) {
