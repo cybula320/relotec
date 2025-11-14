@@ -22,11 +22,11 @@ class PaymentMethodResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $recordTitleAttribute = 'Metoda płatności';
-    protected static ?string $pluralModelLabel = ' metody płatności';
+    protected static ?string $recordTitleAttribute = 'Sposoby płatności';
+    protected static ?string $pluralModelLabel = ' sposoby płatności';
     public static function getNavigationGroup(): ?string
     {
-        return 'Kontrahenci';
+        return 'Ustawienia i słowniki';
     }
     public static function form(Schema $schema): Schema
     {

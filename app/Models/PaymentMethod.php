@@ -18,10 +18,10 @@ class PaymentMethod extends Model
         'aktywny',
     ];
 
-    // public function firmy()
-    //  {
-    //      return $this->belongsToMany(Firma::class, 'firma_payment_method');
-    //   }
+    public function firmy()
+     {
+         return $this->belongsToMany(Firma::class, 'firma_payment_method');
+      }
 
 
 

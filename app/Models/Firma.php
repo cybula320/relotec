@@ -21,6 +21,7 @@ class Firma extends Model
         'adres',
         'miasto',
         'uwagi',
+        'payment_method_id',
     ];
 
     public function handlowcy()
@@ -28,5 +29,10 @@ class Firma extends Model
         return $this->hasMany(Handlowiec::class, 'firma_id');
     }
 
- 
+
+    
+    public function paymentMethod()
+    {
+        return $this->belongsTo(\App\Models\PaymentMethod::class);
+    }
 }
