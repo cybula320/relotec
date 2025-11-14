@@ -92,12 +92,22 @@ class OfertasTable
                     ->badge()
                     ->color('gray'),
 
-                // 📅 Daty
-                TextColumn::make('due_date')
-                    ->label('Termin płatności')
-                    ->date()
-                    ->sortable()
-                    ->color(fn($state) => $state && Carbon::parse($state)->isPast() ? 'danger' : 'gray'),
+                // // 📅 Daty
+                // TextColumn::make('due_date')
+                //     ->label('Termin płatności')
+                //     ->date()
+                //     ->sortable()
+                //     ->color(fn($state) => $state && Carbon::parse($state)->isPast() ? 'danger' : 'gray'),
+
+                TextColumn::make('paymentMethod.nazwa')
+                ->label('Metoda płatności')
+                ->sortable()
+                ->searchable()
+                ->icon('heroicon-o-credit-card')
+                ->tooltip(fn($record) => $record->paymentMethod?->opis ?? null)
+                ->formatStateUsing(fn($state) => $state ?? '—')
+                ->color(fn ($state) => $state ? 'gray' : 'danger')
+                ->toggleable(),
 
                 TextColumn::make('created_at')
                     ->label('Data utworzenia')
@@ -182,7 +192,13 @@ class OfertasTable
                     ->nullable()
                     ->indicator('Zamówienie'),
 
-                    
+                    SelectFilter::make('payment_method_id')
+                            ->label('Metoda płatności')
+                            ->relationship('paymentMethod', 'nazwa') // pobiera listę metod płatności
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Dowolna metoda')
+                            ->indicator('Metoda płatności'),
                 // Zakres dat utworzenia
                 Filter::make('created_at')
                     ->label('Data utworzenia')

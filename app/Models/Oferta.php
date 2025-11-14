@@ -15,7 +15,7 @@ class Oferta extends Model
     protected $fillable = [
         'numer', 'firma_id', 'handlowiec_id', 'waluta',
         'payment_terms_days', 'due_date', 'uwagi',
-        'total_net', 'total_gross', 'status', 'converted_order_id',
+        'total_net', 'total_gross', 'status', 'converted_order_id',  'payment_method_id', 
     ];
 
     public function firma() { return $this->belongsTo(Firma::class); }
@@ -59,6 +59,12 @@ public function recalculateTotals(): void
         'total_gross' => $totalGross,
     ]);
 }
+
+public function paymentMethod()
+{
+    return $this->belongsTo(\App\Models\PaymentMethod::class);
+}
+
 
 
 }

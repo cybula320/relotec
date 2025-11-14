@@ -15,6 +15,7 @@ use App\Models\Firma;
 use App\Models\Handlowiec;
 use Livewire\Attributes\On;
 use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\Toggle;
 
 
 class OfertaForm
@@ -116,6 +117,8 @@ class OfertaForm
             if ($handlowiec) {
                 $set('handlowiec_id', $handlowiec->id);
                 $set('firma_id', $handlowiec->firma_id);
+                $set('payment_method_id', $handlowiec->firma->payment_method_id);
+                $firma = \App\Models\Firma::with('paymentMethod')->find($state);
 
                 Notification::make()
                     ->title('✅ Handlowiec rozpoznany')
@@ -123,6 +126,14 @@ class OfertaForm
                     ->success()
                     ->duration(4000)
                     ->send();
+
+                 Notification::make()
+                    ->title('Domyślna metoda płatności ustawiona')
+                    ->body("Ustawiono metodę płatności firmy: **{$handlowiec->firma->paymentMethod->nazwa}**")
+                    ->success()
+                    ->send();
+
+
             } else {
                 $set('handlowiec_id', null);
                 Notification::make()
@@ -133,20 +144,101 @@ class OfertaForm
             }
         }),
 
-    Select::make('firma_id')
-        ->label('Firma')
-        ->relationship('firma', 'nazwa')
-        ->searchable()
-        ->preload()
-        ->required()
-        ->createOptionForm([
-            TextInput::make('nazwa')->label('Nazwa firmy')->required(),
-            TextInput::make('email')->label('E-mail')->email(),
-            TextInput::make('telefon')->label('Telefon'),
-            TextInput::make('nip')->label('NIP'),
-            TextInput::make('adres')->label('Adres'),
-            TextInput::make('miasto')->label('Miasto'),
-            Textarea::make('uwagi')->label('Uwagi'),
+Select::make('firma_id')
+    ->label('Firma')
+    ->relationship('firma', 'nazwa')
+    ->searchable()
+    ->preload()
+    ->required()
+    ->afterStateUpdated(function (callable $set, callable $get, $state) {
+        if (!$state) {
+            return;
+        }
+    
+        $firma = \App\Models\Firma::with('paymentMethod')->find($state);
+    
+        if (!$firma) {
+            return;
+        }
+    
+        // Ustawiamy metodę płatności z firmy
+        if ($firma->paymentMethod) {
+            $set('payment_method_id', $firma->payment_method_id);
+    
+            // Jeśli metoda ma termin — nadpisujemy payment_terms_days
+            if ($firma->paymentMethod->termin) {
+                $set('payment_terms_days', $firma->paymentMethod->termin);
+            }
+    
+            \Filament\Notifications\Notification::make()
+                ->title('Domyślna metoda płatności ustawiona')
+                ->body("Ustawiono: **{$firma->paymentMethod->nazwa}**")
+                ->success()
+                ->send();
+    
+        } else {
+            // Firma nie ma domyślnej metody płatności — informacja
+            $set('payment_method_id', null);
+    
+            \Filament\Notifications\Notification::make()
+                ->title('Brak domyślnej metody płatności')
+                ->body('Ta firma nie ma ustawionej metody płatności — ustaw ją ręcznie.')
+                ->warning()
+                ->send();
+        }
+    })
+    ->createOptionForm([
+        TextInput::make('nazwa')
+            ->label('Nazwa firmy')
+            ->required(),
+
+        TextInput::make('email')
+            ->label('E-mail')
+            ->email(),
+
+        TextInput::make('telefon')
+            ->label('Telefon'),
+
+        TextInput::make('nip')
+            ->label('NIP'),
+
+        TextInput::make('adres')
+            ->label('Adres'),
+
+        TextInput::make('miasto')
+            ->label('Miasto'),
+
+        Textarea::make('uwagi')
+            ->label('Uwagi'),
+
+        // ⭐ NOWE — domyślna metoda płatności firmy
+        Select::make('payment_method_id')
+            ->label('Domyślna metoda płatności')
+            ->relationship('paymentMethod', 'nazwa')
+            ->searchable()
+            ->preload()
+            ->required()
+            ->helperText('Automatycznie przepisywana do nowych ofert i zamówień.')
+            ->createOptionForm([
+                TextInput::make('nazwa')
+                    ->label('Nazwa metody')
+                    ->required(),
+
+                TextInput::make('opis')
+                    ->label('Opis')
+                    ->nullable(),
+
+                TextInput::make('termin')
+                    ->label('Termin płatności (dni)')
+                    ->numeric()
+                    ->nullable(),
+
+                \Filament\Forms\Components\Toggle::make('aktywny')
+                    ->label('Aktywna')
+                    ->default(true),
+            ]),
+
+    
         ]),
 
 
@@ -233,9 +325,47 @@ class OfertaForm
                             ]),
 
 
-                            DatePicker::make('due_date')
-                                ->label('Data płatności')
-                                ->hint('Jeśli pusta – zostanie obliczona automatycznie'),
+                            // DatePicker::make('due_date')
+                            //     ->label('Data płatności')
+                            //     ->hint('Jeśli pusta – zostanie obliczona automatycznie'),
+
+                            Select::make('payment_method_id')
+                            ->label('Metoda płatności')
+                            ->relationship('paymentMethod', 'nazwa')
+                            ->preload()
+                            ->searchable()
+                            ->placeholder('Wybierz metodę płatności')
+                            ->default(fn (callable $get) =>
+                                \App\Models\Firma::find($get('firma_id'))?->payment_method_id
+                            )
+
+                            // 🔥 POZWÓL UTWORZYĆ NOWĄ METODĘ PŁATNOŚCI
+                            ->createOptionForm([
+                                TextInput::make('nazwa')
+                                    ->label('Nazwa metody płatności')
+                                    ->required()
+                                    ->placeholder('np. Przelew 14 dni'),
+
+                                TextInput::make('opis')
+                                    ->label('Opis (opcjonalnie)')
+                                    ->placeholder('np. standardowy termin płatności'),
+
+                                TextInput::make('termin')
+                                    ->label('Termin płatności (dni)')
+                                    ->numeric()
+                                    ->placeholder('np. 14'),
+
+                                Toggle::make('aktywny')
+                                    ->label('Aktywna metoda')
+                                    ->default(true)
+                                    ->required(),
+                            ])
+
+                            // 🔥 CO ZROBIĆ PRZY ZAPISIE NOWEJ OPCJI
+                            ->createOptionUsing(function (array $data) {
+                                return \App\Models\PaymentMethod::create($data)->id;
+                            })
+                            ->helperText('Domyślna metoda płatności pobierana z kontrahenta.'),
 
 
                             Select::make('waluta')
