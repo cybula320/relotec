@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.12](https://github.com/cybula320/relotec/compare/v0.0.11...v0.0.12) (2025-11-14)
+
+
+### ✨ Nowe funkcje
+
+* **metoda płatności:** deklarowanie metod płatności jako słownik ([3c101c2](https://github.com/cybula320/relotec/commit/3c101c259b797e3ac2a68173e94346ffa1bc8afc))
+
+
+### 🐛 Poprawki
+
+* **metoda płatności:** dopięcie metody płatności do firmy ([3e4926e](https://github.com/cybula320/relotec/commit/3e4926e02a65e6c9b47e5f002fb8bd8f060bd1cc))
+* **metoda płatności:** dopięcie metody płatności do tabeli i oferty ([4fa1938](https://github.com/cybula320/relotec/commit/4fa19383d54a38707f37ff07f073ac2f68deeafb))
+
 ### [0.0.11](https://github.com/cybula320/relotec/compare/v0.0.10...v0.0.11) (2025-11-12)
 
 
