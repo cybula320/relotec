@@ -13,6 +13,7 @@ use Filament\Forms\Components\Hidden;
 use Filament\Notifications\Notification;
 use App\Models\Firma;
 use App\Models\Handlowiec;
+use App\Models\User;
 use Livewire\Attributes\On;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Toggle;
@@ -276,6 +277,14 @@ Select::make('firma_id')
             return \App\Models\Handlowiec::create($data)->getKey();
         }),
 
+
+        Select::make('user_id')
+            ->label('Opiekun oferty (użytkownik systemu)')
+            ->relationship('user', 'name')
+            ->searchable()
+            ->preload()
+            ->helperText('Osoba odpowiedzialna za ofertę po stronie firmy.')
+            ->default(auth()->id()),
 
         TextInput::make('converted_order_id')
         ->label('Powiązane zamówienie')

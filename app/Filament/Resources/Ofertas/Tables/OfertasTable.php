@@ -70,6 +70,13 @@ class OfertasTable
                     )
                     ->icon('heroicon-o-user'),
 
+                TextColumn::make('user.name')
+                    ->label('Opiekun (użytkownik)')
+                    ->sortable()
+                    ->searchable()
+                    ->icon('heroicon-o-user-circle')
+                    ->formatStateUsing(fn($state, $record) => $record->user?->name ?? '—'),
+
                 // 💰 Kwoty
                 TextColumn::make('total_net')
                     ->label('Netto')

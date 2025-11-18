@@ -14,13 +14,14 @@ class Oferta extends Model
     protected $table = 'oferty';
 
     protected $fillable = [
-        'numer', 'firma_id', 'handlowiec_id', 'waluta',
+        'numer', 'firma_id', 'handlowiec_id', 'user_id', 'waluta',
         'payment_terms_days', 'due_date', 'uwagi',
-        'total_net', 'total_gross', 'status', 'converted_order_id',  'payment_method_id', 
+        'total_net', 'total_gross', 'status', 'converted_order_id', 'payment_method_id', 
     ];
 
     public function firma() { return $this->belongsTo(Firma::class); }
     public function handlowiec() { return $this->belongsTo(Handlowiec::class); }
+    public function user() { return $this->belongsTo(User::class); }
     public function pozycje() { return $this->hasMany(OfertaPozycja::class); }
 
     public function getActivitylogOptions(): LogOptions
