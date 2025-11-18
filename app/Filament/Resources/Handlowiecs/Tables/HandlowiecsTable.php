@@ -61,6 +61,13 @@ class HandlowiecsTable
                  ->searchable()
                  ->preload(),
 
+                 // 🔹 Filtrowanie po firmie (opiekun)
+                 SelectFilter::make('firma_id')
+                 ->label('Firma (opiekun)')
+                 ->options(Firma::query()->pluck('nazwa', 'id')->toArray())
+                 ->searchable()
+                 ->preload(),
+
              // 🔹 Filtrowanie po fragmencie e-maila
              Filter::make('email')
                  ->form([

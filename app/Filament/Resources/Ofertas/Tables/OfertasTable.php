@@ -166,8 +166,7 @@ class OfertasTable
                     ->preload()
                     ->multiple(),
 
-
-                    SelectFilter::make('firma_id')
+                SelectFilter::make('firma_id')
                     ->label('Firma')
                     ->relationship('firma', 'nazwa')
                     ->searchable()
@@ -206,6 +205,15 @@ class OfertasTable
                             ->preload()
                             ->placeholder('Dowolna metoda')
                             ->indicator('Metoda płatności'),
+
+                SelectFilter::make('user_id')
+                    ->label('Opiekun (użytkownik)')
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->multiple() // pozwala zaznaczyć wielu opiekunów
+                    ->indicator('Opiekun'),
+
                 // Zakres dat utworzenia
                 Filter::make('created_at')
                     ->label('Data utworzenia')
