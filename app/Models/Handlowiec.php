@@ -12,7 +12,7 @@ class Handlowiec extends Model
     //
     use HasFactory, SoftDeletes, LogsActivity;
 
-    protected $table = 'handlowcy, LogsActivity';
+    protected $table = 'handlowcy';
 
     protected $fillable = [
         'firma_id',
