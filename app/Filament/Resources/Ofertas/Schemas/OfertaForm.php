@@ -15,9 +15,10 @@ use App\Models\Firma;
 use App\Models\Handlowiec;
 use App\Models\User;
 use Livewire\Attributes\On;
-use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Toggle;
 
+use App\Models\Oferta;
+use App\Helpers\OfferNumberHelper;
 
 class OfertaForm
 {
@@ -71,6 +72,8 @@ class OfertaForm
         }
     }),
 
+            Hidden::make('parent_oferta_id')
+                ->default(null),
 
     
             // 💼 DANE OFERTY

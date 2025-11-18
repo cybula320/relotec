@@ -16,12 +16,18 @@ use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Columns\Summarizers\Average;
 use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Enums\RecordActionsPosition;
+ use Filament\Tables\Enums\RecordActionPosition;
+use Filament\Actions\ActionGroup;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
+use App\Models\Oferta;
+use App\Helpers\OfferNumberHelper;
 
 class OfertasTable
 {
@@ -33,12 +39,28 @@ class OfertasTable
         ->paginatedWhileReordering()
         ->description('Lista wszystkich ofert w systemie. Kliknij na ofertę, aby zobaczyć szczegóły.')
         ->groups([
+            // Grupowanie po numerze bazowym oferty (bez litery korekty)
+            Group::make('numer', 'base_number')
+                ->label('Oferta (z korektami)')
+                ->getTitleFromRecordUsing(function (Oferta $record): string {
+                    // numer bazowy to numer oferty głównej lub numer bez litery dla korekty
+                    $base = $record->parentOferta?->numer ?? $record->numer;
+
+                    // jeśli to korekta (np. 1A/10/2025), wyciągamy sam numer bazowy (1/10/2025)
+                    if ($record->isCorrection()) {
+                        [$first, $rest] = explode('/', $base, 2);
+                        // usuwamy literę z końca pierwszego segmentu (np. 1A -> 1)
+                        $first = preg_replace('/[A-Z]+$/', '', $first);
+                        $base = $first . '/' . $rest;
+                    }
+
+                    return $base;
+                }),
+
             Group::make('status')
                 ->label('Status oferty'),
-                Group::make('firma.nazwa')
+            Group::make('firma.nazwa')
                 ->label('Firma'),
-              
-                 
         ])
        
             ->columns([
@@ -49,6 +71,33 @@ class OfertasTable
                     ->searchable()
                     ->icon('heroicon-o-hashtag')
                     ->weight('bold'),
+
+                                // 🧩 Status
+                                BadgeColumn::make('status')
+                                ->label('Status')
+                                ->sortable()
+                                ->colors([
+                                    'gray' => 'draft',
+                                    'info' => 'sent',
+                                    'success' => 'accepted',
+                                    'danger' => 'rejected',
+                                    'warning' => 'converted',
+                                ])
+                                ->icons([
+                                    'heroicon-o-pencil-square' => 'draft',
+                                    'heroicon-o-paper-airplane' => 'sent',
+                                    'heroicon-o-check-circle' => 'accepted',
+                                    'heroicon-o-x-circle' => 'rejected',
+                                    'heroicon-o-arrow-path' => 'converted',
+                                ])
+                                ->formatStateUsing(fn($state) => match ($state) {
+                                    'draft' => 'Szkic',
+                                    'sent' => 'Wysłana',
+                                    'accepted' => 'Zaakceptowana',
+                                    'rejected' => 'Odrzucona',
+                                    'converted' => 'Zamówienie',
+                                    default => ucfirst($state),
+                                }),
 
                 // 🏢 Firma
                 TextColumn::make('firma.nazwa')
@@ -122,33 +171,18 @@ class OfertasTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                // 🧩 Status
-                BadgeColumn::make('status')
-                    ->label('Status')
+
+
+                TextColumn::make('parentOferta.numer')
+                    ->label('Korekta do')
                     ->sortable()
-                    ->colors([
-                        'gray' => 'draft',
-                        'info' => 'sent',
-                        'success' => 'accepted',
-                        'danger' => 'rejected',
-                        'warning' => 'converted',
-                    ])
-                    ->icons([
-                        'heroicon-o-pencil-square' => 'draft',
-                        'heroicon-o-paper-airplane' => 'sent',
-                        'heroicon-o-check-circle' => 'accepted',
-                        'heroicon-o-x-circle' => 'rejected',
-                        'heroicon-o-arrow-path' => 'converted',
-                    ])
-                    ->formatStateUsing(fn($state) => match ($state) {
-                        'draft' => '📝 Szkic',
-                        'sent' => '📤 Wysłana',
-                        'accepted' => '✅ Zaakceptowana',
-                        'rejected' => '❌ Odrzucona',
-                        'converted' => '🔁 Zamówienie',
-                        default => ucfirst($state),
-                    }),
-            ])
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('correction_letter')
+                    ->label('Litera korekty')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ] )
             ->filters([
                 // Status oferty
                 SelectFilter::make('status')
@@ -279,6 +313,17 @@ class OfertasTable
                                         ($data['max'] ? number_format($data['max'], 0, ',', ' ') . ' zł' : '—');
                                 }),
 
+                    TernaryFilter::make('is_correction')
+                    ->label('Korekty ofert')
+                    ->indicator('Korekty')
+                    ->trueLabel('Tylko korekty')
+                    ->falseLabel('Tylko oferty główne')
+                    ->placeholder('Wszystkie')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereNotNull('parent_oferta_id'),
+                        false: fn (Builder $query) => $query->whereNull('parent_oferta_id'),
+                        blank: fn (Builder $query) => $query,
+                    ),
             
                 // Przekształcone w zamówienie
        
@@ -294,21 +339,70 @@ class OfertasTable
 
 
             // ⚙️ AKCJE
-            ->recordActions([
+              ->recordActions([
                 EditAction::make()
                     ->label('Edytuj')
+                    ->button()
+                    ->color('primary')
                     ->icon('heroicon-o-pencil-square'),
 
-                Action::make('view')
-                    ->label('Podgląd')
-                    ->icon('heroicon-o-eye')
-                    ->url(fn($record) => route('filament.panel.resources.ofertas.view', $record))
-                    ->openUrlInNewTab(),
+                ActionGroup::make([
+                    Action::make('view')
+                        ->label('Podgląd')
+                        ->icon('heroicon-o-eye')
+                        ->url(fn ($record) => route('filament.panel.resources.ofertas.view', $record))
+                        ->openUrlInNewTab(),
 
-           
+                    Action::make('createCorrection')
+                        ->label('Korekta')
+                        ->icon('heroicon-o-arrow-path')
+                        ->visible(fn (Oferta $record) => ! $record->isCorrection())
+                        ->requiresConfirmation()
+                        ->action(function (Oferta $record) {
+                            $letter = OfferNumberHelper::generateCorrectionLetter($record);
+                            $correctionNumber = OfferNumberHelper::buildCorrectionNumber($record->numer, $letter);
 
+                            $correction = $record->replicate();
+                            $correction->numer = $correctionNumber;
+                            $correction->parent_oferta_id = $record->id;
+                            $correction->correction_letter = $letter;
+                            $correction->status = 'draft';
+                            $correction->converted_order_id = null;
+                            $correction->push();
 
-            ])
+                            foreach ($record->pozycje as $pozycja) {
+                                $newPosition = $pozycja->replicate();
+                                $newPosition->oferta_id = $correction->id;
+                                $newPosition->save();
+                            }
+
+                            $correction->recalculateTotals();
+
+                            activity()
+                                ->performedOn($correction)
+                                ->withProperties([
+                                    'type' => 'correction_created',
+                                    'parent_oferta_id' => $record->id,
+                                    'parent_numer' => $record->numer,
+                                    'correction_numer' => $correction->numer,
+                                    'correction_letter' => $letter,
+                                ])
+                                ->log('Utworzono korektę oferty');
+
+                            Notification::make()
+                                ->title('Korekta utworzona')
+                                ->body("Utworzono korektę oferty {$record->numer} o numerze {$correction->numer}.")
+                                ->success()
+                                ->send();
+
+                            return redirect()->route('filament.panel.resources.ofertas.edit', $correction);
+                        }),
+                ])
+                    ->label('Więcej')
+                    ->icon('heroicon-o-ellipsis-horizontal')
+                    ->button()
+                    ->color('gray'),
+            ], position: RecordActionsPosition::BeforeColumns)
 
             // ⚒️ TOOLBAR
             ->toolbarActions([
