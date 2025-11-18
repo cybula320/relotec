@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.13](https://github.com/cybula320/relotec/compare/v0.0.12...v0.0.13) (2025-11-18)
+
+
+### 🐛 Poprawki
+
+* **dodanie opiekuna:** dodanie opiekuna do ([2079b67](https://github.com/cybula320/relotec/commit/2079b67983e87b1602c51f04f9a255afc6e15659))
+* **przypisanie:** user do oferty ([f6928be](https://github.com/cybula320/relotec/commit/f6928bed6486cfc23d0c68e43ddb7320b680f1f2))
+
 ### [0.0.12](https://github.com/cybula320/relotec/compare/v0.0.11...v0.0.12) (2025-11-14)
 
 
