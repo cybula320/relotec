@@ -75,6 +75,9 @@ class OfertaForm
             Hidden::make('parent_oferta_id')
                 ->default(null),
 
+            Hidden::make('handlowiec_not_found_notified')
+                ->default(false),
+
     
             // 💼 DANE OFERTY
             Section::make('💼 Dane oferty')
@@ -113,8 +116,13 @@ class OfertaForm
         ->columnSpanFull()
         ->helperText('Podaj e-mail handlowca — system spróbuje przypisać firmę automatycznie.')
         ->reactive()
-        ->afterStateUpdated(function (callable $set, $state) {
-            if (empty($state)) return;
+        ->afterStateUpdated(function (callable $get, callable $set, $state) {
+            if (empty($state)) {
+                // przy czyszczeniu pola resetujemy stan i nie pokazujemy powiadomień
+                $set('handlowiec_id', null);
+                $set('handlowiec_not_found_notified', false);
+                return;
+            }
 
             $handlowiec = \App\Models\Handlowiec::with('firma')->where('email', $state)->first();
 
@@ -122,7 +130,9 @@ class OfertaForm
                 $set('handlowiec_id', $handlowiec->id);
                 $set('firma_id', $handlowiec->firma_id);
                 $set('payment_method_id', $handlowiec->firma->payment_method_id);
-                $firma = \App\Models\Firma::with('paymentMethod')->find($state);
+
+                // resetujemy flagę, bo handlowiec został znaleziony
+                $set('handlowiec_not_found_notified', false);
 
                 Notification::make()
                     ->title('✅ Handlowiec rozpoznany')
@@ -131,20 +141,25 @@ class OfertaForm
                     ->duration(4000)
                     ->send();
 
-                 Notification::make()
+                Notification::make()
                     ->title('Domyślna metoda płatności ustawiona')
                     ->body("Ustawiono metodę płatności firmy: **{$handlowiec->firma->paymentMethod->nazwa}**")
                     ->success()
                     ->send();
-
-
             } else {
                 $set('handlowiec_id', null);
-                Notification::make()
-                    ->title('ℹ️ Brak handlowca w bazie')
-                    ->body('Nie znaleziono handlowca o tym adresie e-mail. Możesz dodać go ręcznie poniżej.')
-                    ->info()
-                    ->send();
+
+                // pokazujemy powiadomienie tylko raz, dopóki użytkownik nie zmieni e-maila
+                if (! $get('handlowiec_not_found_notified')) {
+                    $set('handlowiec_not_found_notified', true);
+
+                    Notification::make()
+                        ->title('ℹ️ Brak handlowca w bazie')
+                        ->body('Nie znaleziono handlowca o tym adresie e-mail. Możesz dodać go ręcznie poniżej.')
+                        ->info()
+                        ->duration(2000)
+                        ->send();
+                }
             }
         }),
 
