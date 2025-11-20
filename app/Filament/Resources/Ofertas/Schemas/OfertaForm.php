@@ -371,12 +371,23 @@ Select::make('firma_id')
                                 'CHF' => 'CHF — Frank Szwajcarski',
                                 'CZK' => 'CZK — Korona Czeska',
                             ])
-                            ->default('PLN')
                             ->required()
                             ->searchable()
                             ->preload()
                             ->selectablePlaceholder(false)
                             ->prefixIcon('heroicon-o-currency-dollar')
+                            ->afterStateHydrated(function (\Filament\Forms\Components\Select $component, $state, $record) {
+                                // Edycja / podgląd: jeśli w modelu jest waluta, pokaż ją
+                                if ($record instanceof \App\Models\Oferta && $record->waluta) {
+                                    $component->state($record->waluta);
+                                    return;
+                                }
+
+                                // Tworzenie: jeśli brak w stanie, ustaw domyślnie PLN
+                                if (blank($state)) {
+                                    $component->state('PLN');
+                                }
+                            })
                             ->helperText('Wybierz walutę, w której wystawiona jest oferta.')
                             ->hint('💡 Domyślnie używana waluta: PLN')
                             ->hintColor('primary'),
