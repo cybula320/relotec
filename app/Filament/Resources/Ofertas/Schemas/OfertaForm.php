@@ -78,7 +78,7 @@ class OfertaForm
         ->suffixIcon('heroicon-o-magnifying-glass')
         ->columnSpanFull()
         ->helperText('Podaj e-mail handlowca — system spróbuje przypisać firmę automatycznie.')
-        ->reactive()
+        ->live(onBlur: true)
         ->afterStateUpdated(function (callable $get, callable $set, $state) {
             if (empty($state)) {
                 // przy czyszczeniu pola resetujemy stan i nie pokazujemy powiadomień
@@ -273,8 +273,11 @@ Select::make('firma_id')
             ->relationship('user', 'name')
             ->searchable()
             ->preload()
+            ->required()
             ->helperText('Osoba odpowiedzialna za ofertę po stronie firmy.')
-            ->default(auth()->id()),
+            ->default(auth()->id())
+            ->live()
+            ->dehydrated(),
 
         TextInput::make('converted_order_id')
         ->label('Powiązane zamówienie')
