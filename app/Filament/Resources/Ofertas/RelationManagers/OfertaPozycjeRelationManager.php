@@ -23,6 +23,7 @@ use Filament\Tables\Columns\Summarizers\Sum;
 // Kolumny tabeli
 use Filament\Tables\Columns\TextColumn;
 use Filament\Notifications\Notification;
+use App\Models\Oferta;
 
 class OfertaPozycjeRelationManager extends RelationManager
 {
@@ -69,10 +70,8 @@ class OfertaPozycjeRelationManager extends RelationManager
                                 ->reactive()
                                 ->helperText('Podaj ilość sztuk / jednostek')
                                 ->suffix('szt.')
-                                ->afterStateUpdated(function ($state, callable $get, callable $set, $livewire) {
+                                ->afterStateUpdated(function ($state, callable $get, callable $set) {
                                     static::przelicz($get, $set);
-                                    // ✅ Emitujemy event do nadrzędnego komponentu (oferty)
-                                    $livewire->dispatch('refreshSummary');
                                 }),
 
                             TextInput::make('unit_price_net')
@@ -83,9 +82,8 @@ class OfertaPozycjeRelationManager extends RelationManager
                                 ->required()
                                 ->reactive()
                                 ->helperText('Cena netto za jedną sztukę')
-                                ->afterStateUpdated(function ($state, callable $get, callable $set, $livewire) {
+                                ->afterStateUpdated(function ($state, callable $get, callable $set) {
                                     static::przelicz($get, $set);
-                                    $livewire->dispatch('refreshSummary');
                                 }),
 
                             TextInput::make('vat_rate')
@@ -96,9 +94,8 @@ class OfertaPozycjeRelationManager extends RelationManager
                                 ->suffix('%')
                                 ->helperText('Standardowa stawka VAT to 23%')
                                 ->reactive()
-                                ->afterStateUpdated(function ($state, callable $get, callable $set, $livewire) {
+                                ->afterStateUpdated(function ($state, callable $get, callable $set) {
                                     static::przelicz($get, $set);
-                                    $livewire->dispatch('refreshSummary');
                                 }),
                         ])
                         ->columns(3)
@@ -169,12 +166,12 @@ class OfertaPozycjeRelationManager extends RelationManager
         $set('total_net', round($netto, 2));
         $set('total_gross', round($brutto, 2));
 
-        // 🔔 UX feedback – delikatne info dla użytkownika
-        Notification::make()
-            ->title('💰 Zaktualizowano wartości pozycji')
-            ->success()
-            ->duration(1000)
-            ->send();
+        // Usuwamy notyfikacje przy każdej zmianie, żeby nie spamować użytkownika
+        // Notification::make()
+        //     ->title('💰 Zaktualizowano wartości pozycji')
+        //     ->success()
+        //     ->duration(1000)
+        //     ->send();
     }
 
     public function table(Table $table): Table
@@ -220,11 +217,25 @@ class OfertaPozycjeRelationManager extends RelationManager
             ])
             
             ->headerActions([
-                CreateAction::make()->label('Dodaj pozycję'),
+                CreateAction::make()
+                    ->label('Dodaj pozycję')
+                    ->after(function ($record, $livewire) {
+                        // $record to nowa OfertaPozycja, $livewire to ten RelationManager
+                        static::updateOfertaTotalsOnParent($record->oferta_id, $livewire);
+                    }),
             ])
             ->recordActions([
-                EditAction::make()->label('Edytuj'),
-                DeleteAction::make()->label('Usuń'),
+                EditAction::make()
+                    ->label('Edytuj')
+                    ->after(function ($record, $livewire) {
+                        static::updateOfertaTotalsOnParent($record->oferta_id, $livewire);
+                    }),
+
+                DeleteAction::make()
+                    ->label('Usuń')
+                    ->after(function ($record, $livewire) {
+                        static::updateOfertaTotalsOnParent($record->oferta_id, $livewire);
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -232,5 +243,40 @@ class OfertaPozycjeRelationManager extends RelationManager
                 ]),
             ])
             ->defaultSort('id', 'asc');
+    }
+
+    private static function updateOfertaTotalsOnParent(int $ofertaId, $livewire): void
+    {
+        $oferta = Oferta::with('pozycje')->find($ofertaId);
+        if (! $oferta) {
+            return;
+        }
+
+        // użyj istniejącej logiki przeliczania, jeśli jest
+        if (method_exists($oferta, 'recalculateTotals')) {
+            $oferta->recalculateTotals();
+            $oferta->refresh();
+        } else {
+            $oferta->total_net = $oferta->pozycje->sum('total_net');
+            $oferta->total_gross = $oferta->pozycje->sum('total_gross');
+            $oferta->save();
+        }
+
+        // ustaw wartości bezpośrednio w formularzu nadrzędnym (EditOferta)
+        if (method_exists($livewire, 'getOwnerRecord')) {
+            // Filament 4: RelationManager ma ownerRecord i ownerForm
+            $owner = $livewire->getOwnerRecord();
+            if (method_exists($livewire, 'getOwnerForm')) {
+                $form = $livewire->getOwnerForm();
+                $form->fill([
+                    'total_net' => round((float) $oferta->total_net, 2),
+                    'total_gross' => round((float) $oferta->total_gross, 2),
+                ]);
+            } else {
+                // awaryjnie spróbuj ustawić na samym ownerze
+                $owner->total_net = $oferta->total_net;
+                $owner->total_gross = $oferta->total_gross;
+            }
+        }
     }
 }

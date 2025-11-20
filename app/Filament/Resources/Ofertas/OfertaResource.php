@@ -48,19 +48,8 @@ class OfertaResource extends Resource
     {
         return [
             RelationManagers\OfertaPozycjeRelationManager::class,
-        
         ];
     }
-
-    protected function afterSave(): void
-{
-    $this->emitToParent('refreshSummary');
-}
-
-protected function afterDelete(): void
-{
-    $this->emitToParent('refreshSummary');
-}
 
     public static function getPages(): array
     {

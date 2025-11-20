@@ -14,7 +14,6 @@ use Filament\Notifications\Notification;
 use App\Models\Firma;
 use App\Models\Handlowiec;
 use App\Models\User;
-use Livewire\Attributes\On;
 use Filament\Forms\Components\Toggle;
 
 use App\Models\Oferta;
@@ -22,55 +21,9 @@ use App\Helpers\OfferNumberHelper;
 
 class OfertaForm
 {
-
-    #[\Livewire\Attributes\On('refreshSummary')]
-    public function refreshSummary(): void
-    {
-        if (! isset($this->record)) {
-            return;
-        }
-    
-        $oferta = \App\Models\Oferta::with('pozycje')->find($this->record->id);
-        if (! $oferta) {
-            return;
-        }
-    
-        $oferta->recalculateTotals();
-    
-        $this->fill([
-            'total_net' => round($oferta->total_net, 2),
-            'total_gross' => round($oferta->total_gross, 2),
-        ]);
-    
-        \Filament\Notifications\Notification::make()
-            ->title('🔄 Podsumowanie zaktualizowane')
-            ->body("{$oferta->total_net} PLN netto / {$oferta->total_gross} PLN brutto")
-            ->success()
-            ->duration(1500)
-            ->send();
-    }
-    
-
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-
-            Hidden::make('recalculate_trigger')
-    ->default(now()->timestamp)
-    ->reactive()
-    ->afterStateUpdated(function (callable $get, callable $set) {
-        $ofertaId = $get('id');
-
-        if (! $ofertaId) {
-            return;
-        }
-
-        $oferta = \App\Models\Oferta::with('pozycje')->find($ofertaId);
-        if ($oferta) {
-            $set('total_net', round($oferta->pozycje->sum('total_net'), 2));
-            $set('total_gross', round($oferta->pozycje->sum('total_gross'), 2));
-        }
-    }),
 
             Hidden::make('parent_oferta_id')
                 ->default(null),
@@ -323,9 +276,13 @@ Select::make('firma_id')
 
 
 
-                            // 💰 PODSUMOWANIE
+                            // 💰 Podsumowanie wartości
             Section::make('💰 Podsumowanie wartości')
             ->description('Suma wartości z pozycji oferty (zmiana nie jest możliwa ręcznie)')
+            ->extraAttributes([
+                'x-data' => '{}',
+                'x-init' => 'setInterval(() => { $wire.pollTotals() }, 5000)',
+            ])
             ->schema([
                 Section::make()
                     ->schema([
