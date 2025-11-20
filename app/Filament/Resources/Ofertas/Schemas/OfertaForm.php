@@ -10,6 +10,7 @@ use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
 use Filament\Notifications\Notification;
 use App\Models\Firma;
 use App\Models\Handlowiec;
@@ -287,40 +288,45 @@ Select::make('firma_id')
 
                             // 💰 Podsumowanie wartości
             Section::make('💰 Podsumowanie wartości')
-            ->description('Suma wartości z pozycji oferty (zmiana nie jest możliwa ręcznie)')
-            ->extraAttributes([
-                'x-data' => '{}',
-                'x-init' => 'setInterval(() => { $wire.pollTotals() }, 5000)',
-            ])
+            ->description('Suma wartości z pozycji oferty (aktualizowana automatycznie)')
             ->schema([
                 Section::make()
                     ->schema([
-                        TextInput::make('total_net')
+                        // Ukryte pola do zapisu w bazie
+                        Hidden::make('total_net')
+                            ->default(0.00)
+                            ->dehydrated(true),
+
+                        Hidden::make('total_gross')
+                            ->default(0.00)
+                            ->dehydrated(true),
+
+                        // Live wyświetlanie sum
+                        Placeholder::make('display_total_net')
                             ->label('Suma netto')
-                            ->prefix('PLN')
-                            ->numeric()
-                            ->default(0.00)
-                            ->required()
-                            ->readOnly()
+                            ->content(function ($record, callable $get) {
+                                if (!$record) {
+                                    return '0,00 PLN';
+                                }
+                                $value = $get('total_net') ?? $record->total_net ?? 0;
+                                return number_format((float) $value, 2, ',', ' ') . ' PLN';
+                            })
                             ->extraAttributes([
-                                'class' => 'font-semibold text-green-700 dark:text-green-400',
+                                'class' => 'text-2xl font-bold text-green-600 dark:text-green-400',
                             ]),
 
-                        TextInput::make('total_gross')
+                        Placeholder::make('display_total_gross')
                             ->label('Suma brutto')
-                            ->prefix('PLN')
-                            ->numeric()
-                            ->default(0.00)
-                            ->required()
-                            ->readOnly()
+                            ->content(function ($record, callable $get) {
+                                if (!$record) {
+                                    return '0,00 PLN';
+                                }
+                                $value = $get('total_gross') ?? $record->total_gross ?? 0;
+                                return number_format((float) $value, 2, ',', ' ') . ' PLN';
+                            })
                             ->extraAttributes([
-                                'class' => 'font-semibold text-green-700 dark:text-green-400',
+                                'class' => 'text-2xl font-bold text-blue-600 dark:text-blue-400',
                             ]),
-
-
-                            // DatePicker::make('due_date')
-                            //     ->label('Data płatności')
-                            //     ->hint('Jeśli pusta – zostanie obliczona automatycznie'),
 
                             Select::make('payment_method_id')
                             ->label('Metoda płatności')

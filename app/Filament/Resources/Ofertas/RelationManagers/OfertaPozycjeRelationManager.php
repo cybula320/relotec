@@ -262,6 +262,9 @@ class OfertaPozycjeRelationManager extends RelationManager
             $oferta->save();
         }
 
+        // Wyślij event do strony EditOferta, żeby odświeżyła formularz
+        $livewire->dispatch('totals-updated');
+
         // ustaw wartości bezpośrednio w formularzu nadrzędnym (EditOferta)
         if (method_exists($livewire, 'getOwnerRecord')) {
             // Filament 4: RelationManager ma ownerRecord i ownerForm

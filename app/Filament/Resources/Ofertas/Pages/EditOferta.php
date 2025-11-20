@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Ofertas\Pages;
 use App\Filament\Resources\Ofertas\OfertaResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
+use Livewire\Attributes\On;
 
 class EditOferta extends EditRecord
 {
@@ -22,14 +23,15 @@ class EditOferta extends EditRecord
         parent::mount($record);
 
         // Uzupełnij podsumowanie przy starcie
-        $this->pollTotals();
+        $this->refreshTotals();
     }
 
     /**
-     * Proste auto-odświeżanie sum co 5 sekund poprzez polling.
-     * Bierzemy aktualne wartości z bazy bez dodatkowych eventów.
+     * Nasłuchiwanie eventu z RelationManager
+     * Odświeża sumy po każdej zmianie pozycji
      */
-    public function pollTotals(): void
+    #[On('totals-updated')]
+    public function refreshTotals(): void
     {
         $this->record->refresh();
 
