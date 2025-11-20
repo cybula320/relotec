@@ -3,13 +3,18 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\OfertaPdfController;
 
 Route::get('/', function () {
-    return redirect()->to('/panel');
-
+    return view('welcome');
 });
 
-
+// PDF routes dla ofert
+Route::get('/oferta/{oferta}/pdf', [OfertaPdfController::class, 'generatePdf'])
+    ->name('oferta.pdf.download');
+    
+Route::get('/oferta/{oferta}/pdf/view', [OfertaPdfController::class, 'streamPdf'])
+    ->name('oferta.pdf.view');
 
 /*
 |--------------------------------------------------------------------------
@@ -24,10 +29,6 @@ Route::get('/', function () {
 | /home/admin/web/serwer.relotec.pl/public_html
 |--------------------------------------------------------------------------
 */
-
-
- 
-
 
 Route::post('/deploy', function () {
     $secret = env('DEPLOY_TOKEN', null);

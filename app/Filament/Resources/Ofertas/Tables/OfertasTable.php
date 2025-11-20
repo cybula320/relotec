@@ -348,11 +348,31 @@ class OfertasTable
                         ->url(fn ($record) => route('filament.panel.resources.ofertas.view', $record))
                         ->openUrlInNewTab(),
 
+                    Action::make('downloadPdf')
+                        ->label('Pobierz PDF')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->color('primary')
+                        ->url(fn ($record) => route('oferta.pdf.download', $record))
+                        ->openUrlInNewTab(),
+
+                    Action::make('viewPdf')
+                        ->label('Podgląd PDF')
+                        ->icon('heroicon-o-document')
+                        ->color('info')
+                        ->url(fn ($record) => route('oferta.pdf.view', $record))
+                        ->openUrlInNewTab(),
+
                     Action::make('sendEmail')
                         ->label('Wyślij email')
                         ->icon('heroicon-o-envelope')
                         ->color('success')
-                        ->action(function (Oferta $record) {
+                        ->form([
+                            \Filament\Forms\Components\Toggle::make('attach_pdf')
+                                ->label('Załącz PDF do emaila')
+                                ->default(true)
+                                ->helperText('PDF zostanie automatycznie załączony do wiadomości'),
+                        ])
+                        ->action(function (Oferta $record, array $data) {
                             // Przygotuj dane do mailto
                             $to = $record->handlowiec?->email ?? $record->firma?->email ?? '';
                             $subject = "Oferta handlowa nr {$record->numer} - {$record->firma?->nazwa}";
@@ -378,30 +398,6 @@ class OfertasTable
                                 default => $record->status
                             } . "\n\n";
                             
-                            if ($record->pozycje->count() > 0) {
-                                $body .= "POZYCJE OFERTY:\n";
-                                $body .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
-                                
-                                $counter = 1;
-                                foreach ($record->pozycje as $pozycja) {
-                                    $body .= "{$counter}. {$pozycja->nazwa}\n";
-                                    $body .= "   Ilość: {$pozycja->ilosc} szt.\n";
-                                    $body .= "   Cena jedn. netto: " . number_format($pozycja->unit_price_net, 2, ',', ' ') . " {$record->waluta}\n";
-                                    $body .= "   VAT: {$pozycja->vat_rate}%\n";
-                                    $body .= "   Wartość netto: " . number_format($pozycja->total_net, 2, ',', ' ') . " {$record->waluta}\n";
-                                    $body .= "   Wartość brutto: " . number_format($pozycja->total_gross, 2, ',', ' ') . " {$record->waluta}\n";
-                                    
-                                    if ($pozycja->opis) {
-                                        $body .= "   Opis: {$pozycja->opis}\n";
-                                    }
-                                    
-                                    $body .= "\n";
-                                    $counter++;
-                                }
-                                
-                                $body .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-                            }
-                            
                             $body .= "\nPODSUMOWANIE:\n";
                             $body .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
                             $body .= "Suma netto:  " . number_format($record->total_net, 2, ',', ' ') . " {$record->waluta}\n";
@@ -416,8 +412,9 @@ class OfertasTable
                                 $body .= "\n";
                             }
                             
-                            if ($record->uwagi) {
-                                $body .= "Uwagi:\n{$record->uwagi}\n\n";
+                            if ($data['attach_pdf']) {
+                                $body .= "📎 W załączniku znajdą Państwo szczegółową ofertę w formacie PDF.\n\n";
+                                $body .= "Link do pobrania PDF: " . route('oferta.pdf.download', $record) . "\n\n";
                             }
                             
                             $body .= "W przypadku pytań proszę o kontakt.\n\n";
@@ -432,6 +429,16 @@ class OfertasTable
                             $mailtoUrl = 'mailto:' . urlencode($to) 
                                 . '?subject=' . urlencode($subject)
                                 . '&body=' . urlencode($body);
+                            
+                            // Powiadomienie dla użytkownika
+                            Notification::make()
+                                ->success()
+                                ->title('Email przygotowany')
+                                ->body($data['attach_pdf'] ? 
+                                    'Email z załącznikiem PDF został przygotowany. Sprawdź link do pobierania w treści.' :
+                                    'Email został przygotowany bez załącznika PDF.'
+                                )
+                                ->send();
                             
                             // Otwórz mailto w nowej karcie
                             return redirect($mailtoUrl);
