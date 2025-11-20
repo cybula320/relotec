@@ -67,7 +67,7 @@ class OfertaPozycjeRelationManager extends RelationManager
                                 ->default(1)
                                 ->minValue(1)
                                 ->required()
-                                ->reactive()
+                                ->live(onBlur: true)
                                 ->helperText('Podaj ilość sztuk / jednostek')
                                 ->suffix('szt.')
                                 ->afterStateUpdated(function ($state, callable $get, callable $set) {
@@ -80,7 +80,7 @@ class OfertaPozycjeRelationManager extends RelationManager
                                 ->step(0.01)
                                 ->placeholder('np. 125.50')
                                 ->required()
-                                ->reactive()
+                                ->live(onBlur: true)
                                 ->helperText('Cena netto za jedną sztukę')
                                 ->afterStateUpdated(function ($state, callable $get, callable $set) {
                                     static::przelicz($get, $set);
@@ -93,7 +93,7 @@ class OfertaPozycjeRelationManager extends RelationManager
                                 ->step(1)
                                 ->suffix('%')
                                 ->helperText('Standardowa stawka VAT to 23%')
-                                ->reactive()
+                                ->live(onBlur: true)
                                 ->afterStateUpdated(function ($state, callable $get, callable $set) {
                                     static::przelicz($get, $set);
                                 }),
