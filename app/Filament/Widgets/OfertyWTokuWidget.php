@@ -20,6 +20,8 @@ class OfertyWTokuWidget extends TableWidget
     protected static ?string $heading = '🧾 Oferty w toku';
    // protected int|string|array $columnSpan = 'full';
 
+   protected static ?int $sort = 4;
+
 
     protected function getTableQuery(): ?Builder
     {

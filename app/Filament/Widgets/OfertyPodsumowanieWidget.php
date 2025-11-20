@@ -11,6 +11,8 @@ class OfertyPodsumowanieWidget extends ChartWidget
 {
     protected ?string $heading = '📈 Liczba ofert w miesiącach (wg statusu)';
    // protected int|string|array $columnSpan = 'full';
+   protected static ?int $sort = 3;
+
 
     protected function getData(): array
     {
