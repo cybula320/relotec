@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.16](https://github.com/cybula320/relotec/compare/v0.0.15...v0.0.16) (2025-11-20)
+
+
+### ✨ Nowe funkcje
+
+* **widget:** fajny widget z dopisanymi do ciebie ofertami ([e034117](https://github.com/cybula320/relotec/commit/e034117dd21f6a9347c5c48a8b55fe0e743c99fd))
+
 ### [0.0.15](https://github.com/cybula320/relotec/compare/v0.0.14...v0.0.15) (2025-11-20)
 
 
