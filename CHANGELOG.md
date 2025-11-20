@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.15](https://github.com/cybula320/relotec/compare/v0.0.14...v0.0.15) (2025-11-20)
+
+
+### 🐛 Poprawki
+
+* **odswiezanie:** dziala odswiezanie ceny w podsumowaniu oferty ([703849c](https://github.com/cybula320/relotec/commit/703849c76e29328aaab662f0708d84bdec1c33a5))
+* **oferta edycji:** zmniejszona ilość powiadomień przy braku handlowca ([88857bd](https://github.com/cybula320/relotec/commit/88857bdab22f0efcab9c1867a882009b6894d115))
+* **oferta:** działa numer oferty ([d91e61a](https://github.com/cybula320/relotec/commit/d91e61ad3fcb70b1980db24e6e22dc0ba1c63141))
+* **oferta:** poprawiona waluta ([8ee68cb](https://github.com/cybula320/relotec/commit/8ee68cbecb3f98d557a28abcc382bac952881355))
+* **oferta:** poprawione selecty ([a4c03a0](https://github.com/cybula320/relotec/commit/a4c03a0aa92d261efc66249d4df94d6099253350))
+* **oferta:** problem z pisaniem ([407788b](https://github.com/cybula320/relotec/commit/407788ba1d9922fdcb65d453c1858a519e389d8b))
+* **oferta:** wywalenie terminu waności oferty ([cb0e795](https://github.com/cybula320/relotec/commit/cb0e795ffd31990fa9613454b40f044a15b43a50))
+* **oferta:** zmiana widoku przez model językowy super ([d988557](https://github.com/cybula320/relotec/commit/d9885578fef8c064502953461b3b564c147e7797))
+* **order:** odswiezajace sie cena w order ([06e45b6](https://github.com/cybula320/relotec/commit/06e45b6c3f9e5c46b666032d8617a80ccf529f20))
+* **orferta:** wyswietlanie elementów select ([476e06d](https://github.com/cybula320/relotec/commit/476e06ded9e8951e3ec51a81981c473329715403))
+
+
+### ✨ Nowe funkcje
+
+* **PDF:** dodana opcja PDF ([32f69de](https://github.com/cybula320/relotec/commit/32f69debff42c392146550064bde839d0880e379))
+
 ### [0.0.14](https://github.com/cybula320/relotec/compare/v0.0.13...v0.0.14) (2025-11-18)
 
 
