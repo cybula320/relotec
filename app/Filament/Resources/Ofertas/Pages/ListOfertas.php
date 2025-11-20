@@ -16,4 +16,6 @@ class ListOfertas extends ListRecords
             CreateAction::make(),
         ];
     }
+
+    
 }

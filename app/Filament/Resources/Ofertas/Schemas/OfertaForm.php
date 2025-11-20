@@ -39,18 +39,27 @@ class OfertaForm
                     Section::make()
                         ->schema([
                             TextInput::make('numer')
-                            ->label('Numer oferty')
-                            ->prefixIcon('heroicon-o-hashtag')
-                            ->default(fn() => \App\Helpers\OfferNumberHelper::generate())
-                            ->readOnly()
-                            ->dehydrated(true) // ważne: żeby został zapisany do bazy
-                            ->required()
-                            ->hint('Automatycznie generowany przy tworzeniu nowej oferty')
-                            ->extraAttributes([
-                                'class' => 'font-semibold text-primary-600 dark:text-primary-400',
-                            ]),
+                                ->label('Numer oferty')
+                                ->prefixIcon('heroicon-o-hashtag')
+                                ->readOnly()
+                                ->required()
+                                ->dehydrated(true)
+                                ->afterStateHydrated(function (TextInput $component, $state, $record) {
+                                    // Jeśli edycja/podgląd i w modelu jest numer, ustawiamy go.
+                                    if ($record instanceof \App\Models\Oferta && $record->numer) {
+                                        $component->state($record->numer);
+                                        return;
+                                    }
 
-
+                                    // Jeśli tworzenie i brak numeru w stanie, generujemy nowy.
+                                    if (blank($state)) {
+                                        $component->state(\App\Helpers\OfferNumberHelper::generate());
+                                    }
+                                })
+                                ->hint('Automatycznie generowany przy tworzeniu nowej oferty')
+                                ->extraAttributes([
+                                    'class' => 'font-semibold text-primary-600 dark:text-primary-400',
+                                ]),
 
                             TextInput::make('payment_terms_days')
                                 ->label('Termin ważności oferty (dni)')
