@@ -132,6 +132,7 @@ Select::make('firma_id')
     ->searchable()
     ->preload()
     ->required()
+    ->reactive()
     ->afterStateUpdated(function (callable $set, callable $get, $state) {
         if (!$state) {
             return;
@@ -227,7 +228,7 @@ Select::make('firma_id')
 
     Select::make('handlowiec_id')
         ->label('Handlowiec')
-        ->options(function (callable $get) {
+        ->options(function (callable $get, $record) {
             $firmaId = $get('firma_id');
             if (!$firmaId) return [];
             return \App\Models\Handlowiec::where('firma_id', $firmaId)
@@ -239,6 +240,14 @@ Select::make('firma_id')
         ->hint(fn (callable $get) => !$get('firma_id') ? 'Najpierw wybierz firmę.' : null)
         ->searchable()
         ->preload()
+        ->live()
+        ->dehydrated()
+        ->afterStateHydrated(function (Select $component, $state, $record) {
+            // Podczas edycji ustaw wartość z bazy
+            if ($record instanceof \App\Models\Oferta && $record->handlowiec_id) {
+                $component->state($record->handlowiec_id);
+            }
+        })
         ->createOptionForm([
             TextInput::make('imie')->label('Imię')->required(),
             TextInput::make('nazwisko')->label('Nazwisko')->required(),
@@ -411,7 +420,15 @@ Select::make('firma_id')
                                 'converted' => '🔁 Przekształcona w zamówienie',
                             ])
                             ->default('draft')
-                            ->required(),
+                            ->required()
+                            ->live()
+                            ->dehydrated()
+                            ->afterStateHydrated(function (Select $component, $state, $record) {
+                                // Podczas edycji ustaw wartość z bazy
+                                if ($record instanceof \App\Models\Oferta && $record->status) {
+                                    $component->state($record->status);
+                                }
+                            }),
 
                         Textarea::make('uwagi')
                             ->label('Uwagi wewnętrzne / komentarze')
