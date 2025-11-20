@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Ofertas;
 use App\Filament\Resources\Ofertas\Pages\CreateOferta;
 use App\Filament\Resources\Ofertas\Pages\EditOferta;
 use App\Filament\Resources\Ofertas\Pages\ListOfertas;
+use App\Filament\Resources\Ofertas\Pages\ViewOferta;
+use App\Filament\Resources\Ofertas\Pages\TimelineOferty;
 use App\Filament\Resources\Ofertas\Schemas\OfertaForm;
 use App\Filament\Resources\Ofertas\Tables\OfertasTable;
 use App\Models\Oferta;
@@ -57,7 +59,8 @@ class OfertaResource extends Resource
             'index' => ListOfertas::route('/'),
             'create' => CreateOferta::route('/create'),
             'edit' => EditOferta::route('/{record}/edit'),
-            'view' => Pages\ViewOferta::route('/{record}'), 
+            'view' => ViewOferta::route('/{record}'),
+           // 'timeline' => TimelineOferty::route('/timeline'),
         ];
     }
 }
