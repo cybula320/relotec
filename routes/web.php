@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\OfertaPdfController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->to('/panel');
 });
 
 // PDF routes dla ofert
