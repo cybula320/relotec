@@ -61,13 +61,13 @@ class OfertaForm
                                     'class' => 'font-semibold text-primary-600 dark:text-primary-400',
                                 ]),
 
-                            TextInput::make('payment_terms_days')
-                                ->label('Termin ważności oferty (dni)')
-                                ->numeric()
-                                ->default(14)
-                                ->minValue(0)
-                                ->maxValue(120)
-                                ->suffix('dni'),
+                            // TextInput::make('payment_terms_days')
+                            //     ->label('Termin ważności oferty (dni)')
+                            //     ->numeric()
+                            //     ->default(14)
+                            //     ->minValue(0)
+                            //     ->maxValue(120)
+                            //     ->suffix('dni'),
 
 
 
