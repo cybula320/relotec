@@ -348,6 +348,101 @@ class OfertasTable
                         ->url(fn ($record) => route('filament.panel.resources.ofertas.view', $record))
                         ->openUrlInNewTab(),
 
+                    Action::make('sendEmail')
+                        ->label('Wyślij email')
+                        ->icon('heroicon-o-envelope')
+                        ->color('success')
+                        ->action(function (Oferta $record) {
+                            // Przygotuj dane do mailto
+                            $to = $record->handlowiec?->email ?? $record->firma?->email ?? '';
+                            $subject = "Oferta handlowa nr {$record->numer} - {$record->firma?->nazwa}";
+                            
+                            // Sformatowana treść emaila
+                            $body = "Dzień dobry,\n\n";
+                            $body .= "Przesyłam ofertę handlową z następującymi szczegółami:\n\n";
+                            $body .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+                            $body .= "OFERTA NR {$record->numer}\n";
+                            $body .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+                            
+                            $body .= "Klient:        {$record->firma?->nazwa}\n";
+                            if ($record->handlowiec) {
+                                $body .= "Osoba kontaktowa: {$record->handlowiec->imie} {$record->handlowiec->nazwisko}\n";
+                            }
+                            $body .= "Data wystawienia: " . $record->created_at->format('d.m.Y') . "\n";
+                            $body .= "Status:        " . match($record->status) {
+                                'draft' => 'Szkic',
+                                'sent' => 'Wysłana',
+                                'accepted' => 'Zaakceptowana',
+                                'rejected' => 'Odrzucona',
+                                'converted' => 'Przekształcona w zamówienie',
+                                default => $record->status
+                            } . "\n\n";
+                            
+                            if ($record->pozycje->count() > 0) {
+                                $body .= "POZYCJE OFERTY:\n";
+                                $body .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+                                
+                                $counter = 1;
+                                foreach ($record->pozycje as $pozycja) {
+                                    $body .= "{$counter}. {$pozycja->nazwa}\n";
+                                    $body .= "   Ilość: {$pozycja->ilosc} szt.\n";
+                                    $body .= "   Cena jedn. netto: " . number_format($pozycja->unit_price_net, 2, ',', ' ') . " {$record->waluta}\n";
+                                    $body .= "   VAT: {$pozycja->vat_rate}%\n";
+                                    $body .= "   Wartość netto: " . number_format($pozycja->total_net, 2, ',', ' ') . " {$record->waluta}\n";
+                                    $body .= "   Wartość brutto: " . number_format($pozycja->total_gross, 2, ',', ' ') . " {$record->waluta}\n";
+                                    
+                                    if ($pozycja->opis) {
+                                        $body .= "   Opis: {$pozycja->opis}\n";
+                                    }
+                                    
+                                    $body .= "\n";
+                                    $counter++;
+                                }
+                                
+                                $body .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+                            }
+                            
+                            $body .= "\nPODSUMOWANIE:\n";
+                            $body .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+                            $body .= "Suma netto:  " . number_format($record->total_net, 2, ',', ' ') . " {$record->waluta}\n";
+                            $body .= "Suma brutto: " . number_format($record->total_gross, 2, ',', ' ') . " {$record->waluta}\n";
+                            $body .= "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+                            
+                            if ($record->paymentMethod) {
+                                $body .= "Metoda płatności: {$record->paymentMethod->nazwa}\n";
+                                if ($record->paymentMethod->termin) {
+                                    $body .= "Termin płatności: {$record->paymentMethod->termin} dni\n";
+                                }
+                                $body .= "\n";
+                            }
+                            
+                            if ($record->uwagi) {
+                                $body .= "Uwagi:\n{$record->uwagi}\n\n";
+                            }
+                            
+                            $body .= "W przypadku pytań proszę o kontakt.\n\n";
+                            $body .= "Pozdrawiam,\n";
+                            $body .= auth()->user()->name;
+                            
+                            if (auth()->user()->email) {
+                                $body .= "\nEmail: " . auth()->user()->email;
+                            }
+                            
+                            // Zakoduj parametry dla mailto
+                            $mailtoUrl = 'mailto:' . urlencode($to) 
+                                . '?subject=' . urlencode($subject)
+                                . '&body=' . urlencode($body);
+                            
+                            // Otwórz mailto w nowej karcie
+                            return redirect($mailtoUrl);
+                        })
+                        ->disabled(fn (Oferta $record) => !$record->handlowiec?->email && !$record->firma?->email)
+                        ->tooltip(fn (Oferta $record) => 
+                            (!$record->handlowiec?->email && !$record->firma?->email) 
+                                ? 'Brak adresu email handlowca lub firmy' 
+                                : 'Wyślij email do: ' . ($record->handlowiec?->email ?? $record->firma?->email)
+                        ),
+
                     Action::make('duplicate')
                         ->label('Duplikuj')
                         ->icon('heroicon-o-document-duplicate')
