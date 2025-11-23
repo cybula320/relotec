@@ -11,11 +11,11 @@ class OfferNumberHelper
     {
         $now = Carbon::now();
 
+        $day = (int) $now->format('d');
         $month = (int) $now->format('m');
         $year = (int) $now->format('Y');
 
-        $lastOffer = Oferta::whereMonth('created_at', $month)
-            ->whereYear('created_at', $year)
+        $lastOffer = Oferta::whereDate('created_at', $now->toDateString())
             ->orderByDesc('id')
             ->first();
 
@@ -26,8 +26,8 @@ class OfferNumberHelper
             $nextNumber = ((int) $numberPart) + 1;
         }
 
-        // format: 1/10/2025
-        return sprintf('%d/%d/%d', $nextNumber, $month, $year);
+        // format: 1/23/11/2025 (Numer/dzień/miesiąc/rok)
+        return sprintf('%d/%d/%d/%d', $nextNumber, $day, $month, $year);
     }
 
     public static function generateCorrectionLetter(Oferta $parent): string
@@ -42,7 +42,7 @@ class OfferNumberHelper
 
     public static function buildCorrectionNumber(string $baseNumber, string $letter): string
     {
-        // 1/10/2025 + A => 1A/10/2025
+        // 1/23/11/2025 + A => 1A/23/11/2025
         [$first, $rest] = explode('/', $baseNumber, 2);
 
         return sprintf('%s%s/%s', $first, $letter, $rest);
