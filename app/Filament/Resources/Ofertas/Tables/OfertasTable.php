@@ -83,6 +83,19 @@ class OfertasTable
                     ->copyMessage('Numer skopiowany!')
                     ->tooltip('Kliknij aby skopiować'),
 
+                // 📝 Tytuł oferty - NOWA KOLUMNA
+                TextColumn::make('tytul')
+                    ->label('Tytuł')
+                    ->sortable()
+                    ->searchable()
+                    ->icon('heroicon-o-document-text')
+                    ->limit(40)
+                    ->wrap()
+                    ->tooltip(fn($record) => $record->tytul ?? 'Brak tytułu')
+                    ->formatStateUsing(fn($state) => $state ?: '—')
+                    ->color(fn ($state) => $state ? 'gray' : 'danger')
+                    ->toggleable(isToggledHiddenByDefault: false),
+
                 // 🧩 Status - INLINE EDITABLE
                 SelectColumn::make('status')
                     ->label('Status')
@@ -258,6 +271,17 @@ class OfertasTable
                     ->preload()
                     ->multiple()
                     ->indicator('Opiekun'),
+
+                // NOWY FILTR - Handlowiec
+                SelectFilter::make('handlowiec_id')
+                    ->label('Handlowiec')
+                    ->relationship('handlowiec', 'nazwisko')
+                    ->getOptionLabelFromRecordUsing(fn($record) => "{$record->imie} {$record->nazwisko} ({$record->firma->nazwa})")
+                    ->searchable(['imie', 'nazwisko'])
+                    ->preload()
+                    ->multiple()
+                    ->placeholder('Dowolny handlowiec')
+                    ->indicator('Handlowiec'),
 
                 Filter::make('created_at')
                     ->label('Data utworzenia')

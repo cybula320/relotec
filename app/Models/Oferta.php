@@ -14,7 +14,7 @@ class Oferta extends Model
     protected $table = 'oferty';
 
     protected $fillable = [
-        'numer', 'firma_id', 'handlowiec_id', 'user_id', 'waluta',
+        'numer', 'tytul', 'firma_id', 'handlowiec_id', 'user_id', 'waluta',
         'payment_terms_days', 'due_date', 'uwagi',
         'total_net', 'total_gross', 'status', 'converted_order_id', 'payment_method_id', 
         'parent_oferta_id', 'correction_letter',

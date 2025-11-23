@@ -66,6 +66,18 @@ class OfertaForm
                                             'class' => 'font-semibold text-primary-600 dark:text-primary-400',
                                         ]),
 
+                                    Textarea::make('tytul')
+                                        ->label('Tytuł oferty')
+                                        ->placeholder('np. Dostawa sprzętu biurowego dla działu księgowości, Projekt kompleksowej strony internetowej z systemem CMS')
+                                        ->columnSpanFull()
+                                        ->rows(3)
+                                        ->autosize()
+                                        ->helperText('Opisz przedmiot oferty - może być dłuższy opis, który ułatwi wyszukiwanie i identyfikację')
+                                        ->hint('Opcjonalne, ale zalecane')
+                                        ->hintIcon('heroicon-o-light-bulb')
+                                        ->hintColor('info')
+                                        ->maxLength(500),
+
                                     TextInput::make('email_handlowca')
                                         ->label('E-mail handlowca')
                                         ->placeholder('np. jan.kowalski@firma.pl')
